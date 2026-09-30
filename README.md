@@ -142,4 +142,4 @@ npm start
 - **اسم المطور**: محمد سليمان علي (Mohamed Suliman Ali)
 - **GitHub**: [@mohamed-suliman2004](https://github.com/mohamed-suliman2004)
 - **المشروع**: منظومة إقفال (Eqfal Financial Accounting System)
-- **الشركة**: شركة المستند (Mostanad)
+- **الشركة**: شركة مستند لتقنية المعلومات (Mostanad)
