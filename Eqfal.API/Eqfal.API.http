@@ -1,0 +1,6 @@
+@Eqfal.API_HostAddress = https://eqfall.mostanad.ly
+
+GET {{Eqfal.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

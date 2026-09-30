@@ -1,0 +1,130 @@
+# ==============================================================================
+# Eqfal System - Comprehensive Production GitIgnore
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Environment & Sensitive Configuration Files (Security)
+# ------------------------------------------------------------------------------
+**/appsettings.json
+**/appsettings.*.json
+!**/appsettings.Example.json
+!**/appsettings.json.example
+
+**/config.json
+!**/config.example.json
+!**/angular.json
+!**/tsconfig*.json
+!**/package.json
+!**/package-lock.json
+
+**/serviceAccountKey.json
+!**/serviceAccountKey.example.json
+
+*.env
+*.env.*
+*.pfx
+*.pem
+*.key
+*.pubxml
+*.pubxml.user
+
+# ------------------------------------------------------------------------------
+# 2. Build Outputs & Archives (Binaries must NOT be tracked)
+# ------------------------------------------------------------------------------
+*.apk
+*.aab
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+*.iso
+
+Production_Build/
+Production_Build.rar
+Eqfal_Full_Package/
+Full_Package/
+publish_api/
+publish_output/
+**/publish/
+**/publish_sc/
+Eqfal_LandingPage_Deploy.zip
+
+# ------------------------------------------------------------------------------
+# 3. .NET / Visual Studio
+# ------------------------------------------------------------------------------
+**/bin/
+**/obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+.vscode/
+*.DotSettings.user
+**/.sonarqube/
+**/*.bak
+
+# ------------------------------------------------------------------------------
+# 4. Flutter / Dart / Android / iOS
+# ------------------------------------------------------------------------------
+**/.dart_tool/
+**/build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+**/android/.gradle/
+**/android/local.properties
+**/ios/Pods/
+**/ios/.symlinks/
+
+# ------------------------------------------------------------------------------
+# 5. Node / Web / Angular
+# ------------------------------------------------------------------------------
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.angular/
+
+# ------------------------------------------------------------------------------
+# 6. WhatsApp Microservice Sessions & Database Stores
+# ------------------------------------------------------------------------------
+**/auth_info*/
+**/store_baileys*.json
+**/contacts_dict*.json
+
+# ------------------------------------------------------------------------------
+# 7. Diagnostic Scripts, One-off Tests, and Logs (Clutter)
+# ------------------------------------------------------------------------------
+scratch/
+TestPairDiagnostic/
+SignalRTest/
+*.bak
+*.log
+*log*.txt
+Untitled-*.txt
+scratch_body.json
+BUNDLE-METADATA/
+landing page/
+800
+EQFAL_SUBSCRIPTIONS_IMPLEMENTATION_PLAN.md
+
+# One-off test scripts
+**/*.ps1
+**/*.bat
+**/test_*.dart
+**/test_*.js
+CheckDb.cs
+k6_load_test.js
+sonar-project.properties
+
+# Local temporary root server files (Eqfal.LandingPage is tracked inside its folder)
+/index.html
+/script.js
+/style.css
+app_icon_512x512*.png
+feature_graphic_1024x500*.png
+logo_part_*.png
+slice_*.png

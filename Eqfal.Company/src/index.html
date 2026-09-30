@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <title>إقفال — لوحة مراقبة النظام والشركة (Eqfal Operations Portal)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Theme Initialization (Dashboard Default: Light Mode) -->
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem('eqfal_company_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Fonts: Alexandria, Tajawal & Readex Pro -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Material Symbols & Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined&display=swap" />
+  
+  <!-- Custom Modern Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="antialiased min-h-screen flex flex-row overflow-x-hidden">
+
+  <!-- Fullscreen Login Screen (Crisp Dedicated Light Portal) -->
+  <div id="login-screen" class="fixed inset-0 z-[99999] flex flex-col justify-between items-center p-4 sm:p-6 overflow-y-auto">
+    
+    <!-- Top Floating Navbar in Login Screen -->
+    <header class="w-full max-w-lg flex items-center justify-between mb-4 sm:mb-6 px-2">
+      <!-- Right: Brand Title & Status Indicator -->
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+        <span class="text-xs font-bold text-slate-700">إقفال — بوابة العمليات والمراقبة</span>
+      </div>
+
+      <!-- Left: Main Website Link (Login stays exclusively light) -->
+      <div class="flex items-center gap-2">
+        <a href="https://eqfall.mostanad.ly" target="_blank" class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-base text-indigo-600">language</span>
+          <span class="hidden sm:inline">الموقع الرئيسي</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Master Crisp Clean Login Card -->
+    <main class="clean-login-card my-auto">
+      <!-- Shield Emblem & Header Branding -->
+      <div class="text-center mb-6">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-violet-600 shadow-lg shadow-indigo-500/25 flex items-center justify-center text-white mx-auto mb-3.5">
+          <span class="material-symbols-outlined text-3xl">shield_lock</span>
+        </div>
+        
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 text-[11px] font-bold mb-2">
+          <span class="material-symbols-outlined text-xs text-indigo-600">verified_user</span>
+          بوابة الدخول المعتمدة لمسؤولي النظام
+        </div>
+
+        <h1 class="text-2xl font-black text-slate-900 tracking-tight">تسجيل دخول الإدارة</h1>
+        <p class="text-xs text-slate-500 mt-1 font-medium">يرجى كتابة بيانات الدخول الخاصة بحسابك للوصول للوحة التحكم</p>
+      </div>
+
+      <!-- Form -->
+      <form id="admin-login-form" onsubmit="event.preventDefault(); doLogin(event);" class="space-y-4">
+        <!-- Username Input -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5" for="login-username">
+            اسم المستخدم <span class="text-rose-500">*</span>
+          </label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">account_circle</span>
+            <input type="text" id="login-username" value="" required autocomplete="username" placeholder="أدخل اسم المستخدم" class="clean-login-input" style="direction: ltr; text-align: left; padding: 0.8rem 1rem 0.8rem 2.8rem;">
+          </div>
+        </div>
+
+        <!-- Password Input -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1.5" for="login-password">
+            كلمة المرور <span class="text-rose-500">*</span>
+          </label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">lock</span>
+            <input type="password" id="login-password" value="" required autocomplete="current-password" placeholder="••••••••" class="clean-login-input" style="direction: ltr; text-align: left; padding: 0.8rem 2.8rem 0.8rem 2.8rem;">
+            <button type="button" onclick="togglePasswordVisibility()" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition p-1.5 rounded-lg hover:bg-slate-100" title="إظهار / إخفاء كلمة المرور">
+              <span class="material-symbols-outlined text-lg" id="pwd-eye-icon">visibility</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Error Banner -->
+        <div id="login-error" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold text-center flex items-center justify-center gap-2"></div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="btn-login-submit" onclick="doLogin(event)" class="w-full py-3.5 rounded-xl clean-login-btn text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer mt-2">
+          <span>دخول إلى لوحة العمليات</span>
+          <span class="material-symbols-outlined text-lg">arrow_back</span>
+        </button>
+      </form>
+
+      <!-- Footer inside Card -->
+      <div class="pt-5 mt-6 border-t border-slate-100 text-[11px] text-slate-500 flex items-center justify-between">
+        <span class="font-medium">منظومة إقفال المحاسبية © 2026</span>
+        <span class="flex items-center gap-1 text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+          <span class="material-symbols-outlined text-xs text-emerald-600">lock</span>
+          جلسة مشفرة وآمنة
+        </span>
+      </div>
+    </main>
+
+    <!-- Bottom copyright -->
+    <footer class="text-center text-[11px] text-slate-500 mt-4 sm:mt-6 font-medium">
+      جميع المحاولات والأنشطة الإدارية تسجل تلقائياً في سجل التدقيق الأمني (Audit Logs)
+    </footer>
+  </div>
+
+  <!-- App Main Layout (Hidden by default when not logged in) -->
+  <div id="app-layout" class="hidden flex min-h-screen w-full relative" style="display: none;">
+    
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="sidebar-backdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity duration-300 opacity-0"></div>
+
+    <!-- Collapsible Sidebar (Right Side in RTL) -->
+    <aside id="sidebar" class="app-sidebar fixed lg:sticky top-0 right-0 h-screen flex flex-col justify-between overflow-y-auto border-l shadow-sm">
+      
+      <!-- Sidebar Header / Brand -->
+      <div>
+        <div class="p-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80">
+          <div class="flex items-center gap-3 overflow-hidden">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/20 text-white">
+              <span class="material-symbols-outlined text-2xl">grid_view</span>
+            </div>
+            <div class="sidebar-hide-on-collapse whitespace-nowrap">
+              <h1 class="text-base font-bold text-slate-900 dark:text-white leading-tight">إقفـال</h1>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">لوحة الشركة والمراقبة</p>
+            </div>
+          </div>
+          <button onclick="toggleSidebar()" id="sidebar-toggle-btn" class="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="طي / توسيع القائمة">
+            <span class="material-symbols-outlined text-xl" id="sidebar-toggle-icon">menu_open</span>
+          </button>
+          <button onclick="toggleMobileSidebar()" class="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+            <span class="material-symbols-outlined text-xl">close</span>
+          </button>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="p-3 space-y-6">
+          
+          <!-- Section 1 -->
+          <div>
+            <div class="sidebar-hide-on-collapse px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              العمليات والمالية
+            </div>
+            <nav class="space-y-1">
+              <button onclick="switchTab('dashboard')" id="tab-dashboard" data-title="اللوحة العامة" class="sidebar-nav-btn active w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-lg">dashboard</span>
+                  <span class="sidebar-hide-on-collapse">اللوحة العامة</span>
+                </div>
+              </button>
+
+              <button onclick="switchTab('subscriptions')" id="tab-subscriptions" data-title="المشتركين" class="sidebar-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-lg">card_membership</span>
+                  <span class="sidebar-hide-on-collapse">المشتركين</span>
+                </div>
+                <span id="subs-active-badge" class="nav-badge sidebar-hide-on-collapse bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-700/50">0</span>
+              </button>
+
+              <button onclick="switchTab('pricing-plans')" id="tab-pricing-plans" data-title="خطط الأسعار" class="sidebar-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-lg">sell</span>
+                  <span class="sidebar-hide-on-collapse">خطط الأسعار</span>
+                </div>
+              </button>
+
+              <button onclick="switchTab('payments')" id="tab-payments" data-title="الإيرادات والدفعات" class="sidebar-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-lg">payments</span>
+                  <span class="sidebar-hide-on-collapse">الإيرادات والدفعات</span>
+                </div>
+              </button>
+
+              <button onclick="switchTab('marketers')" id="tab-marketers" data-title="المسوقين والخصومات" class="sidebar-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-lg">loyalty</span>
+                  <span class="sidebar-hide-on-collapse">المسوقين والخصومات</span>
+                </div>
+              </button>
+            </nav>
+          </div>
+
+          <!-- Section 2 -->
+          <div>
+            <div class="sidebar-hide-on-collapse px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              الأنظمة والربط
+            </div>
+            <nav class="space-y-1">
+              <button onclick="switchTab('sessions')" id="tab-sessions" data-title="واتساب والأجهزة" class="sidebar-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-lg">phonelink_ring</span>
+                  <span class="sidebar-hide-on-collapse">واتساب والأجهزة</span>
+                </div>
+                <span id="sessions-badge" class="nav-badge sidebar-hide-on-collapse bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-indigo-300 dark:border-indigo-700/50">0</span>
+              </button>
+
+              <button onclick="switchTab('activity')" id="tab-activity" data-title="تتبع المستخدمين" class="sidebar-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-lg">admin_panel_settings</span>
+                  <span class="sidebar-hide-on-collapse">تتبع المستخدمين</span>
+                </div>
+              </button>
+
+              <button onclick="switchTab('logs')" id="tab-logs" data-title="سجل الأحداث" class="sidebar-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-lg">receipt_long</span>
+                  <span class="sidebar-hide-on-collapse">سجل الأحداث</span>
+                </div>
+              </button>
+            </nav>
+          </div>
+
+          <!-- Quick Connect Action -->
+          <div class="pt-2">
+            <button onclick="openPairModal()" data-title="ربط جهاز جديد" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-semibold py-2.5 px-3 rounded-xl shadow-md shadow-emerald-600/20 text-xs flex items-center justify-center gap-2 transition">
+              <span class="material-symbols-outlined text-base">add_link</span>
+              <span class="sidebar-hide-on-collapse">طلب ربط جهاز جديد</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Sidebar Bottom Controls -->
+      <div class="p-3 border-t border-slate-200 dark:border-slate-800/80 space-y-2">
+        
+        <!-- Live status -->
+        <div class="flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800">
+          <div class="flex items-center gap-2">
+            <span class="pulse-green"></span>
+            <span class="sidebar-hide-on-collapse text-[11px] font-medium text-slate-600 dark:text-slate-300">تحديث حي (3s)</span>
+          </div>
+          <button onclick="fetchData()" class="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition" title="تحديث فوري">
+            <span class="material-symbols-outlined text-sm">refresh</span>
+          </button>
+        </div>
+
+        <!-- Theme Switcher Button -->
+        <button onclick="toggleTheme()" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition" title="تبديل الوضع">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-lg text-indigo-500 theme-icon-indicator">dark_mode</span>
+            <span class="sidebar-hide-on-collapse theme-label-indicator font-semibold">الوضع الليلي</span>
+          </div>
+        </button>
+
+        <!-- User Profile & Logout -->
+        <div class="flex items-center justify-between px-2 pt-1">
+          <div class="flex items-center gap-2.5 overflow-hidden">
+            <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 text-sm font-bold">
+              EQ
+            </div>
+            <div class="sidebar-hide-on-collapse whitespace-nowrap">
+              <div class="text-xs font-bold text-slate-800 dark:text-slate-200">مسؤول النظام</div>
+              <div class="text-[10px] text-slate-400">admin@eqfal</div>
+            </div>
+          </div>
+          <button onclick="doLogout()" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition" title="تسجيل الخروج">
+            <span class="material-symbols-outlined text-lg">logout</span>
+          </button>
+        </div>
+
+      </div>
+
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content-wrapper" class="flex-1 flex flex-col min-w-0">
+      
+      <!-- Top Bar -->
+      <header class="app-topbar sticky top-0 z-30 px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+            <span class="material-symbols-outlined text-xl">menu</span>
+          </button>
+          <div>
+            <h2 id="current-tab-title" class="text-base lg:text-lg font-bold text-slate-900 dark:text-white">اللوحة العامة ومؤشرات الأداء</h2>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <button onclick="openPairModal()" class="hidden sm:inline-flex bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-medium px-3.5 py-1.5 rounded-xl shadow-sm text-xs items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-base">add_link</span> طلب ربط جهاز
+          </button>
+          <button onclick="fetchData()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-600 transition" title="تحديث البيانات">
+            <span class="material-symbols-outlined text-lg">refresh</span>
+          </button>
+          <button onclick="toggleTheme()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-indigo-600 transition" title="تبديل الوضع">
+            <span class="material-symbols-outlined text-lg theme-icon-indicator">dark_mode</span>
+          </button>
+          <button onclick="doLogout()" class="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-500 hover:bg-rose-100 transition" title="تسجيل الخروج">
+            <span class="material-symbols-outlined text-lg">logout</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Body with Tabs -->
+      <main class="flex-1 px-4 lg:px-8 py-6 space-y-8">
+    
+    <!-- API Offline Warning Banner -->
+    <div id="api-offline-banner" class="hidden p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-900 dark:text-amber-200 flex items-center justify-between gap-4 shadow-sm">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-2xl">cloud_off</span>
+        </div>
+        <div>
+          <div class="font-bold text-sm" id="api-offline-title">تنبيه: تعذر الاتصال بخادم الـ API الرئيسي (503 Service Unavailable)</div>
+          <div class="text-xs text-amber-700 dark:text-amber-400 mt-0.5">الخادم لا يستجيب حالياً. يرجى تشغيل حوض التطبيقات (Application Pool) في سيرفر IIS / Plesk لاستئناف جلب الجلسات والمشتركين والبيانات الحية.</div>
+        </div>
+      </div>
+      <button onclick="fetchData()" class="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold shrink-0 transition flex items-center gap-1.5 shadow-md">
+        <span class="material-symbols-outlined text-sm">refresh</span> إعادة الفحص
+      </button>
+    </div>
+
+    <!-- Critical OTP Sender Warning Banner -->
+    <div id="otp-critical-alert" class="hidden bg-rose-500/15 border border-rose-500/40 text-rose-300 p-4 rounded-2xl flex items-center justify-between gap-4 shadow-lg shadow-rose-950/40">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-2xl animate-pulse">warning</span>
+        </div>
+        <div>
+          <h4 class="font-bold text-sm text-white">تنبيه عاجل: رقم إرسال أكواد الـ OTP الرسمي غير متصل حالياً!</h4>
+          <p class="text-xs text-rose-200/90 mt-0.5">لن يتمكن المستخدمون من استلام رموز استعادة كلمة المرور عبر واتساب. يرجى اختيار رقم بديل متصل أو إعادة ربط الجهاز فوراً.</p>
+        </div>
+      </div>
+      <button onclick="switchTab('sessions')" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition whitespace-nowrap shadow-md">
+        إدارة الأرقام الآن
+      </button>
+    </div>
+
+    <!-- Health Overview Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <div class="glass-card p-6 flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-indigo-400">dns</span>
+            <h3 class="font-semibold text-slate-200">خادم الـ API الرئيسي</h3>
+          </div>
+          <p class="text-xs text-slate-400">https://eqfall.mostanad.ly/api (.NET 10)</p>
+          <div class="pt-2" id="api-status-badge">
+            <span class="badge-warning"><span class="material-symbols-outlined text-sm animate-spin">sync</span> جاري الفحص...</span>
+          </div>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+          <span class="material-symbols-outlined text-2xl">api</span>
+        </div>
+      </div>
+
+      <div class="glass-card p-6 flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-emerald-400">bolt</span>
+            <h3 class="font-semibold text-slate-200">محرك الواتساب (Evolution API)</h3>
+          </div>
+          <p class="text-xs text-slate-400">Evolution API Engine (Port 8080)</p>
+          <div class="pt-2" id="node-status-badge">
+            <span class="badge-warning"><span class="material-symbols-outlined text-sm animate-spin">sync</span> جاري الفحص...</span>
+          </div>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+          <span class="material-symbols-outlined text-2xl">forum</span>
+        </div>
+      </div>
+
+      <div class="glass-card p-6 flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-violet-400">database</span>
+            <h3 class="font-semibold text-slate-200">قاعدة البيانات (SQL Server)</h3>
+          </div>
+          <p class="text-xs text-slate-400">MS SQL Server (EqfalDb)</p>
+          <div class="pt-2" id="db-status-badge">
+            <span class="badge-warning"><span class="material-symbols-outlined text-sm animate-spin">sync</span> جاري الفحص...</span>
+          </div>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
+          <span class="material-symbols-outlined text-2xl">storage</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 1: Dashboard Content -->
+    <div id="content-dashboard" class="space-y-8">
+      
+      <!-- Metric Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="glass-card p-5 space-y-2">
+          <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-sm">
+            <span>الجلسات النشطة حالياً</span>
+            <span class="material-symbols-outlined text-indigo-400">phone_android</span>
+          </div>
+          <div id="metric-active-sessions" class="text-3xl font-bold text-slate-900 dark:text-white">0</div>
+          <p class="text-xs text-emerald-500 dark:text-emerald-400 flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">verified</span> متزامنة مع SQL Server
+          </p>
+        </div>
+
+        <div class="glass-card p-5 space-y-2">
+          <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-sm">
+            <span>استهلاك الذاكرة (Heap RAM)</span>
+            <span class="material-symbols-outlined text-violet-400">memory</span>
+          </div>
+          <div id="metric-ram-used" class="text-3xl font-bold text-slate-900 dark:text-white">0 MB</div>
+          <p id="metric-ram-total" class="text-xs text-slate-500 dark:text-slate-400">الإجمالي: 0 MB</p>
+        </div>
+
+        <div class="glass-card p-5 space-y-2">
+          <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-sm">
+            <span>الرسائل (وارد / صادر)</span>
+            <span class="material-symbols-outlined text-emerald-400">swap_calls</span>
+          </div>
+          <div class="text-3xl font-bold text-slate-900 dark:text-white flex items-baseline gap-2">
+            <span id="metric-msg-received">0</span>
+            <span class="text-sm font-normal text-slate-500 dark:text-slate-400">/ <span id="metric-msg-sent">0</span></span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400">إجمالي العمليات المعالجة</p>
+        </div>
+
+        <div class="glass-card p-5 space-y-2">
+          <div class="flex items-center justify-between text-slate-500 dark:text-slate-400 text-sm">
+            <span>مدة تشغيل النظام (Uptime)</span>
+            <span class="material-symbols-outlined text-amber-400">schedule</span>
+          </div>
+          <div id="metric-uptime" class="text-2xl font-bold text-slate-900 dark:text-white">0 دقيقة</div>
+          <p class="text-xs text-emerald-500 dark:text-emerald-400 flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">shield</span> استقرار مستمر
+          </p>
+        </div>
+      </div>
+
+      <!-- Webhook & Concurrency Metrics -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <div class="glass-card p-6 space-y-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-indigo-400">alt_route</span>
+              <h3 class="font-semibold text-lg text-slate-900 dark:text-slate-100">أداء وسرعة الـ Webhooks</h3>
+            </div>
+            <span class="text-xs text-slate-500 dark:text-slate-400">Max Queue: 10,000</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4 text-center">
+            <div class="bg-slate-100 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+              <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">ناجحة ✅</span>
+              <span id="metric-wh-success" class="text-2xl font-bold text-emerald-500 dark:text-emerald-400">0</span>
+            </div>
+            <div class="bg-slate-100 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+              <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">معادة ⚠️</span>
+              <span id="metric-wh-failures" class="text-2xl font-bold text-amber-500 dark:text-amber-400">0</span>
+            </div>
+            <div class="bg-slate-100 dark:bg-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+              <span class="text-xs text-slate-500 dark:text-slate-400 block mb-1">مرفوضة ❌</span>
+              <span id="metric-wh-dropped" class="text-2xl font-bold text-rose-500 dark:text-rose-400">0</span>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-500 dark:text-slate-400">طابور المعالجة الحالي:</span>
+              <span id="metric-queue-length" class="font-bold text-slate-900 dark:text-white">0 رسالة</span>
+            </div>
+            <div class="w-full bg-slate-200 dark:bg-slate-900 rounded-full h-2.5 overflow-hidden">
+              <div id="metric-queue-bar" class="bg-indigo-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card p-6 space-y-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-violet-400">tune</span>
+              <h3 class="font-semibold text-lg text-slate-900 dark:text-slate-100">المعالجة المتزامنة للأجهزة</h3>
+            </div>
+            <span class="badge-up">أداء فائق</span>
+          </div>
+
+          <div class="space-y-4">
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+              <span class="text-sm text-slate-700 dark:text-slate-300">مسارات Webhook العاملة (Workers):</span>
+              <span id="metric-workers" class="font-bold text-indigo-500 dark:text-indigo-400">0 / 5</span>
+            </div>
+
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+              <span class="text-sm text-slate-700 dark:text-slate-300">قنوات الاقتران النشطة (Pairing Slots):</span>
+              <span id="metric-pairings" class="font-bold text-emerald-500 dark:text-emerald-400">0 / 5</span>
+            </div>
+
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+              <span class="text-sm text-slate-700 dark:text-slate-300">جلسات AuthStore النشطة في RAM:</span>
+              <span id="metric-auth-stores" class="font-bold text-amber-500 dark:text-amber-400">1 جلسة</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- TAB 2: Sessions Table -->
+    <div id="content-sessions" class="space-y-6 hidden">
+      <!-- OTP Sender Configuration Card -->
+      <div class="glass-card p-6 border-indigo-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/20 text-white shrink-0">
+            <span class="material-symbols-outlined text-2xl">mark_as_unread</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="font-bold text-base text-white">الرقم الرسمي لإرسال رموز استعادة كلمة المرور (OTP)</h3>
+              <span id="otp-sender-badge" class="badge-up text-xs">جاري التحميل...</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">الرقم المعتمد الذي يقوم بإرسال أكواد الـ OTP للمستخدمين عبر الواتساب عند ضغط "نسيت كلمة المرور"</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 w-full md:w-auto">
+          <select id="otp-sender-select" class="bg-slate-900 border border-slate-700 text-white text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-amber-500 flex-1 md:w-64">
+            <option value="">جاري جلب الأرقام...</option>
+          </select>
+          <button onclick="saveOtpSender()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white text-sm font-semibold shadow-lg shadow-amber-500/20 transition flex items-center gap-1.5 shrink-0">
+            <span class="material-symbols-outlined text-base">save</span>
+            حفظ الرقم الرسمي
+          </button>
+        </div>
+      </div>
+
+      <div class="glass-card overflow-hidden">
+        <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-white">إدارة متابعة الجلسات والأجهزة</h2>
+            <p class="text-xs text-slate-400">متابعة اتصال كل مستخدم بحسابات الواتساب المرتبطة</p>
+          </div>
+          <button onclick="openPairModal()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm">add_link</span> ربط حساب جديد
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-right text-sm">
+            <thead>
+              <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold bg-slate-50 dark:bg-slate-900/40">
+                <th class="p-4"># المعرف</th>
+                <th class="p-4">الاسم الكامل</th>
+                <th class="p-4">اسم الحساب / البريد</th>
+                <th class="p-4">رقم الهاتف</th>
+                <th class="p-4">حالة الاتصال</th>
+                <th class="p-4">آخر اتصال</th>
+                <th class="p-4 text-center">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="sessions-table-body" class="divide-y divide-slate-200 dark:divide-slate-800/60 text-sm">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Content: User Activity & Security Audit -->
+    <div id="content-activity" class="space-y-6 hidden">
+      <!-- Section 1: User Productivity & Traffic Table -->
+      <div class="glass-card p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <span class="material-symbols-outlined text-indigo-500">group</span>
+              تحليلات إنتاجية وحركة المستخدمين (User Productivity Analytics)
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">تتبع حجم العمليات المالية والرسائل المعالجة لكل مستخدم في النظام</p>
+          </div>
+          <button onclick="fetchUserActivity()" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-800 flex items-center gap-1 font-bold shadow-sm">
+            <span class="material-symbols-outlined text-xs">sync</span> تحديث النشاط
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-right text-sm">
+            <thead>
+              <tr class="text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 text-xs font-bold bg-slate-50 dark:bg-slate-900/40">
+                <th class="p-4"># المعرف</th>
+                <th class="p-4">الاسم الكامل</th>
+                <th class="p-4">اسم الحساب / البريد</th>
+                <th class="p-4">رقم الهاتف</th>
+                <th class="p-4 text-center">العمليات المعالجة</th>
+                <th class="p-4 text-center">رسائل واردة (Inbound)</th>
+                <th class="p-4 text-center">رسائل صادرة (Outbound)</th>
+                <th class="p-4 text-center">حالة الجلسة</th>
+              </tr>
+            </thead>
+            <tbody id="user-activity-table-body" class="divide-y divide-slate-200 dark:divide-slate-800/60">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Content: Subscriptions Management -->
+    <div id="content-subscriptions" class="space-y-6 hidden">
+      <!-- Subscriptions KPI Stats -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="glass-card p-4 flex items-center justify-between border-emerald-500/20">
+          <div>
+            <span class="text-xs text-slate-400">الاشتراكات النشطة</span>
+            <div id="subs-stat-active" class="text-2xl font-bold text-emerald-400 mt-1">0</div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">verified</span>
+          </div>
+        </div>
+
+        <div class="glass-card p-4 flex items-center justify-between border-indigo-500/20">
+          <div>
+            <span class="text-xs text-slate-400">فترة تجريبية (Trial)</span>
+            <div id="subs-stat-trial" class="text-2xl font-bold text-indigo-400 mt-1">0</div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">hourglass_top</span>
+          </div>
+        </div>
+
+        <div class="glass-card p-4 flex items-center justify-between border-amber-500/20">
+          <div>
+            <span class="text-xs text-slate-400">فترة سماح (Grace)</span>
+            <div id="subs-stat-grace" class="text-2xl font-bold text-amber-400 mt-1">0</div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">warning</span>
+          </div>
+        </div>
+
+        <div class="glass-card p-4 flex items-center justify-between border-rose-500/20">
+          <div>
+            <span class="text-xs text-slate-400">اشتراكات منتهية</span>
+            <div id="subs-stat-expired" class="text-2xl font-bold text-rose-400 mt-1">0</div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">cancel</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter, Search & Actions Bar -->
+      <div class="glass-card p-5 space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <span class="material-symbols-outlined text-emerald-400">card_membership</span>
+              إدارة المشتركين وتمديد الصلاحيات (Subscriptions Management)
+            </h2>
+            <p class="text-xs text-slate-400">عرض كافة الحسابات والخطط ومتابعة تواريخ التجديد مع إمكانية التمديد المباشر</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="fetchSubscriptions()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium flex items-center gap-1.5 transition shadow-lg shadow-indigo-600/30">
+              <span class="material-symbols-outlined text-sm">refresh</span> تحديث المشتركين
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 flex-wrap bg-slate-100 dark:bg-slate-900/80 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-slate-600 dark:text-slate-400 font-bold ml-1">تصفية الحالة:</span>
+            <button onclick="filterSubsStatus('ALL')" id="sub-filter-ALL" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-bold transition shadow-sm">الكل</button>
+            <button onclick="filterSubsStatus('Active')" id="sub-filter-Active" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">نشط 🟢</button>
+            <button onclick="filterSubsStatus('Trial')" id="sub-filter-Trial" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">تجريبي 🔵</button>
+            <button onclick="filterSubsStatus('Grace')" id="sub-filter-Grace" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">سماح 🟡</button>
+            <button onclick="filterSubsStatus('Expired')" id="sub-filter-Expired" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition">منتهي 🔴</button>
+          </div>
+          <div class="flex-1 max-w-sm">
+            <input type="text" id="subs-search-input" oninput="debounceSubsSearch()" placeholder="بحث باسم العميل، الهاتف، أو الحساب..." class="w-full bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-1.5 text-slate-900 dark:text-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-right text-sm">
+            <thead>
+              <tr class="text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 text-xs font-bold bg-slate-50 dark:bg-slate-900/40">
+                <th class="p-3.5"># المعرف</th>
+                <th class="p-3.5">الاسم الكامل للعميل</th>
+                <th class="p-3.5">اسم الحساب / البريد</th>
+                <th class="p-3.5">رقم الهاتف</th>
+                <th class="p-3.5">الخطة</th>
+                <th class="p-3.5">دورة الفوترة</th>
+                <th class="p-3.5">تاريخ الانتهاء</th>
+                <th class="p-3.5 text-center">الحالة</th>
+                <th class="p-3.5 text-center">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="subscriptions-table-body" class="divide-y divide-slate-200 dark:divide-slate-800/60 text-xs">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Content: Pricing Plans Management -->
+    <div id="content-pricing-plans" class="space-y-6 hidden">
+      <div class="glass-card p-6 space-y-6">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <span class="material-symbols-outlined text-amber-500">sell</span>
+              إدارة خطط الأسعار وفترة السماح (Pricing & Settings)
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">تعديل أسعار الدورات الأربعة (شهر، 3 شهور، 6 شهور، سنة) وإعدادات النظام الحسابي</p>
+          </div>
+          <button onclick="fetchPricingPlans()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+            <span class="material-symbols-outlined text-sm">refresh</span> تحديث الخطط
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Main Plan Card: Eqfal Pro -->
+          <div class="lg:col-span-2 glass-card p-6 border-emerald-500/30 space-y-6 bg-white dark:bg-slate-900/40">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-2xl">diamond</span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-900 dark:text-white text-base">خطة: إقفال برو (Eqfal Pro)</h3>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">خطة كاملة بدون حدود على القيود أو المحادثات</p>
+                </div>
+              </div>
+              <span class="badge-up"><span class="material-symbols-outlined text-xs">check</span> نشطة للجميع</span>
+            </div>
+
+            <!-- 2 Billing Cycles Price Inputs: Monthly and Yearly -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="bg-slate-50 dark:bg-slate-950/70 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                <div class="flex items-center justify-between">
+                  <label class="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-indigo-500 text-base">calendar_month</span>
+                    سعر الاشتراك الشهري (30 يوم):
+                  </label>
+                  <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">أساسي</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="number" id="plan-price-monthly" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white font-mono text-base font-bold focus:outline-none focus:border-indigo-500 shadow-sm" value="50">
+                  <span class="text-xs font-bold text-slate-600 dark:text-slate-400 shrink-0">د.ل / شهر</span>
+                </div>
+              </div>
+
+              <div class="bg-slate-50 dark:bg-slate-950/70 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
+                <div class="flex items-center justify-between">
+                  <label class="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-emerald-500 text-base">verified</span>
+                    سعر الاشتراك السنوي (365 يوم):
+                  </label>
+                  <span class="text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800" id="saving-preview-yearly">توفير 30% 🔥</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="number" id="plan-price-yearly" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-white font-mono text-base font-bold focus:outline-none focus:border-emerald-500 shadow-sm" value="420">
+                  <span class="text-xs font-bold text-slate-600 dark:text-slate-400 shrink-0">د.ل / سنة</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end pt-2">
+              <button onclick="savePlanPrices()" id="btn-save-prices" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center gap-2 transition shadow-lg shadow-emerald-600/30">
+                <span class="material-symbols-outlined text-base">save</span> حفظ وتحديث الأسعار (شهري وسنوي)
+              </button>
+            </div>
+          </div>
+
+          <!-- Subscription Settings: Grace Period & Trial -->
+          <div class="glass-card p-6 space-y-6 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800">
+            <div class="border-b border-slate-200 dark:border-slate-800 pb-4">
+              <h3 class="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
+                <span class="material-symbols-outlined text-indigo-500">tune</span>
+                إعدادات دورة الاشتراك
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">فترة السماح والوضع للقراءة فقط (Read-Only)</p>
+            </div>
+
+            <div class="space-y-4 text-xs">
+              <div>
+                <label class="block font-bold text-slate-800 dark:text-slate-300 mb-1.5">فترة السماح بعد الانتهاء (أيام):</label>
+                <input type="number" id="settings-grace-days" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-3.5 py-2 text-slate-900 dark:text-white font-mono text-sm font-bold focus:outline-none focus:border-indigo-500" value="3">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400 block mt-1">يستمر العميل في استخدام النظام حتى تنتهي فترة السماح.</span>
+              </div>
+
+              <div>
+                <label class="block font-bold text-slate-800 dark:text-slate-300 mb-1.5">مدة التجربة المجانية التلقائية (أيام):</label>
+                <input type="number" id="settings-trial-days" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-lg px-3.5 py-2 text-slate-900 dark:text-white font-mono text-sm font-bold focus:outline-none focus:border-indigo-500" value="7">
+                <span class="text-[11px] text-slate-500 dark:text-slate-400 block mt-1">تمنح تلقائياً عند تسجيل أي حساب جديد.</span>
+              </div>
+
+              <div class="pt-4">
+                <button onclick="saveSubscriptionSettings()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-lg shadow-indigo-600/30">
+                  <span class="material-symbols-outlined text-base">check_circle</span> حفظ إعدادات النظام
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Content: Payments & Revenue -->
+    <div id="content-payments" class="space-y-6 hidden">
+      <!-- Payments KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="glass-card p-4 flex items-center justify-between border-emerald-500/30">
+          <div>
+            <span class="text-xs text-slate-400">إجمالي الإيرادات المحصلة</span>
+            <div class="text-2xl font-bold text-emerald-400 mt-1 flex items-baseline gap-1">
+              <span id="pay-stat-total-revenue">0.00</span>
+              <span class="text-xs font-normal text-slate-300">د.ل</span>
+            </div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">account_balance_wallet</span>
+          </div>
+        </div>
+
+        <div class="glass-card p-4 flex items-center justify-between border-indigo-500/20">
+          <div>
+            <span class="text-xs text-slate-400">العمليات الناجحة (Settled)</span>
+            <div id="pay-stat-settled-count" class="text-2xl font-bold text-white mt-1">0</div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">verified</span>
+          </div>
+        </div>
+
+        <div class="glass-card p-4 flex items-center justify-between border-amber-500/20">
+          <div>
+            <span class="text-xs text-slate-400">قيد الانتظار (Pending)</span>
+            <div id="pay-stat-pending-count" class="text-2xl font-bold text-amber-400 mt-1">0</div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">pending</span>
+          </div>
+        </div>
+
+        <div class="glass-card p-4 flex items-center justify-between border-rose-500/20">
+          <div>
+            <span class="text-xs text-slate-400">عمليات فاشلة / ملغاة</span>
+            <div id="pay-stat-failed-count" class="text-2xl font-bold text-rose-400 mt-1">0</div>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">error_outline</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payments Ledger Table -->
+      <div class="glass-card p-6 space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <span class="material-symbols-outlined text-indigo-400">payments</span>
+              سجل المدفوعات والتحصيلات الإلكترونية (Payments Ledger)
+            </h2>
+            <p class="text-xs text-slate-400">سجل متكامل ومحدث لجميع عمليات الشراء والتجديد عبر بوابة EzonePay</p>
+          </div>
+          <button onclick="fetchPayments()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium flex items-center gap-1.5 transition">
+            <span class="material-symbols-outlined text-sm">refresh</span> تحديث الدفعات
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-right text-sm">
+            <thead>
+              <tr class="text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 text-xs font-bold bg-slate-50 dark:bg-slate-900/40">
+                <th class="p-3.5"># المعرف</th>
+                <th class="p-3.5">الاسم الكامل</th>
+                <th class="p-3.5">اسم الحساب</th>
+                <th class="p-3.5">المبلغ</th>
+                <th class="p-3.5">البوابة</th>
+                <th class="p-3.5">كود الخصم</th>
+                <th class="p-3.5">معرف البوابة</th>
+                <th class="p-3.5">التاريخ</th>
+                <th class="p-3.5 text-center">الحالة</th>
+              </tr>
+            </thead>
+            <tbody id="payments-table-body" class="divide-y divide-slate-200 dark:divide-slate-800/60 text-xs">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. Content: Marketers & Discount Codes -->
+    <div id="content-marketers" class="space-y-6 hidden">
+      <!-- Marketers Header & Actions -->
+      <div class="glass-card p-6 space-y-6">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <span class="material-symbols-outlined text-teal-500">loyalty</span>
+              إدارة المسوقين وأكواد الخصم والعمولات (Affiliate & Marketers Ledger)
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400">نظام القيود المحاسبية للعمولات والاستحقاقات والتسويات النقدية للمسوقين</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="openAddMarketerModal()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+              <span class="material-symbols-outlined text-sm">person_add</span> إضافة مسوق جديد
+            </button>
+            <button onclick="openAddDiscountModal()" class="px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+              <span class="material-symbols-outlined text-sm">add</span> كود خصم إضافي
+            </button>
+            <button onclick="fetchMarketers()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+              <span class="material-symbols-outlined text-sm">refresh</span> تحديث
+            </button>
+          </div>
+        </div>
+
+        <!-- Marketers Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-right text-sm">
+            <thead>
+              <tr class="text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 text-xs font-bold bg-slate-50 dark:bg-slate-900/40">
+                <th class="p-3.5">المسوق</th>
+                <th class="p-3.5">الهاتف</th>
+                <th class="p-3.5">كود الخصم</th>
+                <th class="p-3.5">نوع العمولة</th>
+                <th class="p-3.5">الرصيد المستحق</th>
+                <th class="p-3.5">إجمالي المكتسب</th>
+                <th class="p-3.5">إجمالي المصروف</th>
+                <th class="p-3.5 text-center">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="marketers-table-body" class="divide-y divide-slate-200 dark:divide-slate-800/60 text-xs">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Discount Codes Section -->
+      <div class="glass-card p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-amber-500">local_offer</span>
+            <span>أكواد الخصم النشطة</span>
+            <span class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800 font-bold">DISCOUNT CODES</span>
+          </h3>
+          <button onclick="fetchDiscountCodes()" class="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center gap-1 font-bold">
+            <span class="material-symbols-outlined text-xs">sync</span> تحديث الأكواد
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-right text-sm">
+            <thead>
+              <tr class="text-slate-400 border-b border-slate-800 text-xs uppercase bg-slate-900/40">
+                <th class="p-3">الكود</th>
+                <th class="p-3">نوع الخصم</th>
+                <th class="p-3">قيمة الخصم</th>
+                <th class="p-3">مرات الاستخدام</th>
+                <th class="p-3">الحد الأقصى</th>
+                <th class="p-3 text-center">الحالة</th>
+              </tr>
+            </thead>
+            <tbody id="discounts-table-body" class="divide-y divide-slate-800/60 text-xs">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Content: System Audit & Error Logs -->
+    <div id="content-logs" class="glass-card p-6 space-y-6 hidden">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-amber-400">receipt_long</span>
+            سجل الأحداث والتدقيق والأخطاء (System Audit & Event Logs)
+          </h2>
+          <p class="text-xs text-slate-400">سجل شامل ومباشر لجميع العمليات، الأخطاء، محاولات الدخول، وأحداث الواتساب</p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button onclick="cleanupAuditLogs(30)" class="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-xs text-rose-300 border border-rose-500/30 flex items-center gap-1.5 transition" title="حذف السجلات الأقدم من 30 يوماً لتخفيف قاعدة البيانات">
+            <span class="material-symbols-outlined text-sm">delete_sweep</span> تطهير الأقدم من 30 يوم
+          </button>
+          <button onclick="exportAuditLogsCsv()" class="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-xs text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 transition" title="تصدير السجلات إلى ملف Excel / CSV">
+            <span class="material-symbols-outlined text-sm">file_download</span> تصدير CSV
+          </button>
+          <button onclick="fetchAuditLogs()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs text-white flex items-center gap-1.5 transition shadow-lg shadow-indigo-600/30">
+            <span class="material-symbols-outlined text-sm">refresh</span> تحديث السجل
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters & Search Bar -->
+      <div class="flex items-center justify-between gap-3 flex-wrap bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs">
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="text-slate-400 font-medium ml-1">التصنيف:</span>
+          <button onclick="filterAuditType('all')" id="filter-btn-all" class="px-3 py-1.5 rounded-lg bg-indigo-600 text-white font-medium transition">الكل</button>
+          <button onclick="filterAuditType('error')" id="filter-btn-error" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition">الأخطاء 🔴</button>
+          <button onclick="filterAuditType('security')" id="filter-btn-security" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition">الأمان و OTP 🟡</button>
+          <button onclick="filterAuditType('operations')" id="filter-btn-operations" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition">العمليات 🔵</button>
+        </div>
+        <div class="flex-1 max-w-sm">
+          <input type="text" id="audit-search-input" oninput="debounceAuditSearch()" placeholder="بحث في السجلات (اسم، إجراء، تفاصيل، IP)..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3.5 py-1.5 text-slate-200 text-xs focus:outline-none focus:border-indigo-500">
+        </div>
+      </div>
+
+      <!-- Logs Container -->
+      <div id="audit-logs-container" class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs space-y-2.5 max-h-[600px] overflow-y-auto">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+  </main>
+    </div><!-- /main-content-wrapper -->
+  </div><!-- /app-layout -->
+
+  <!-- Modal Dialog -->
+  <div id="pair-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+    <div class="glass-card max-w-md w-full p-6 space-y-6 border-indigo-500/30">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-indigo-400">phonelink_setup</span>
+          <h3 class="font-bold text-lg text-white">ربط جهاز واتساب جديد</h3>
+        </div>
+        <button onclick="closePairModal()" class="text-slate-400 hover:text-white transition">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1.5">معرف المستخدم (UserId):</label>
+          <input type="number" id="pair-user-id" placeholder="مثال: 2" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1.5">رقم الهاتف (مع مفتاح الدولة):</label>
+          <input type="text" id="pair-phone" placeholder="مثال: 218913578201" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm font-mono focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div id="pair-error" class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs hidden"></div>
+        <div id="pair-result" class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-2 hidden">
+          <span class="text-xs text-emerald-400 block">✨ رمز الاقتران الخاص بك هو:</span>
+          <span id="pair-code-display" class="text-3xl font-bold font-mono text-emerald-300 tracking-widest">------</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button onclick="closePairModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-sm font-medium transition">إلغاء</button>
+        <button onclick="submitPairing()" id="pair-submit-btn" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium shadow-lg shadow-indigo-600/30 transition">
+          طلب الرمز
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Extend Subscription Modal -->
+  <div id="extend-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+    <div class="glass-card max-w-md w-full p-6 space-y-5 border-emerald-500/30">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-400">update</span>
+          <h3 class="font-bold text-base text-white">تمديد صلاحية الاشتراك يدوياً</h3>
+        </div>
+        <button onclick="closeExtendModal()" class="text-slate-400 hover:text-white transition">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <input type="hidden" id="extend-sub-id">
+
+      <div class="space-y-3 text-xs">
+        <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+          <div class="text-slate-400">المستخدم: <strong id="extend-user-name" class="text-white">...</strong></div>
+          <div class="text-slate-400">الانتهاء الحالي: <span id="extend-current-expiry" class="text-amber-300 font-mono">...</span></div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-300 mb-1">الأيام الإضافية للتمديد:</label>
+          <div class="flex gap-2 mb-2">
+            <button type="button" onclick="setExtendDays(7)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">+7 أيام</button>
+            <button type="button" onclick="setExtendDays(30)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">+30 يوماً</button>
+            <button type="button" onclick="setExtendDays(90)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">+90 يوماً</button>
+            <button type="button" onclick="setExtendDays(365)" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs">+سنة</button>
+          </div>
+          <input type="number" id="extend-days" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-emerald-500" value="30">
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-300 mb-1">سبب التمديد / ملاحظة الإدارة:</label>
+          <input type="text" id="extend-reason" placeholder="سداد نقدي مباشر / ترقية استثنائية..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div id="extend-error" class="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs hidden"></div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button onclick="closeExtendModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs font-medium transition">إلغاء</button>
+        <button onclick="submitExtendSubscription()" id="btn-submit-extend" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium shadow-lg shadow-emerald-600/30 transition">
+          تأكيد التمديد
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Marketer Modal -->
+  <div id="add-marketer-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+    <div class="glass-card max-w-lg w-full p-6 space-y-4 border-teal-500/30">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-teal-400">person_add</span>
+          <h3 class="font-bold text-base text-white">إضافة مسوق جديد وتوليد كود خصم</h3>
+        </div>
+        <button onclick="closeAddMarketerModal()" class="text-slate-400 hover:text-white transition">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">اسم المسوق:</label>
+            <input type="text" id="m-name" placeholder="محمد علي" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">رقم الهاتف:</label>
+            <input type="text" id="m-phone" placeholder="091XXXXXXX" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-teal-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-300 mb-1">كود الخصم المقترح (Auto Code):</label>
+          <div class="flex gap-2">
+            <input type="text" id="m-code" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-emerald-400 font-mono font-bold uppercase focus:outline-none focus:border-teal-500">
+            <button type="button" onclick="generateRandomCode()" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs shrink-0">توليد كود</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">نوع الخصم للعميل:</label>
+            <select id="m-discount-type" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500">
+              <option value="0">نسبة مئوية (%)</option>
+              <option value="1">مبلغ ثابت (د.ل)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">قيمة الخصم للعميل:</label>
+            <input type="number" id="m-discount-value" value="10" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-teal-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">نوع عمولة المسوق:</label>
+            <select id="m-comm-type" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500">
+              <option value="0">نسبة مئوية (%)</option>
+              <option value="1">مبلغ ثابت (د.ل)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">قيمة عمولة المسوق:</label>
+            <input type="number" id="m-comm-value" value="15" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-teal-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">الحد الأقصى للاستخدام (مرات):</label>
+            <input type="number" id="m-max-uses" placeholder="غير محدود (فارغ)" min="1" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-teal-500">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">تاريخ انتهاء الصلاحية (اختياري):</label>
+            <input type="date" id="m-expiry" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-teal-500">
+          </div>
+        </div>
+
+        <div id="add-marketer-error" class="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs hidden"></div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button onclick="closeAddMarketerModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs font-medium transition">إلغاء</button>
+        <button onclick="submitAddMarketer()" id="btn-submit-marketer" class="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-medium shadow-lg shadow-teal-600/30 transition">
+          حفظ وإصدار الكود
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Marketer Payout Modal -->
+  <div id="payout-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+    <div class="glass-card max-w-md w-full p-6 space-y-4 border-amber-500/30">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-amber-400">payments</span>
+          <h3 class="font-bold text-base text-white">تسجيل صرف دفعة نقدية لمسوق</h3>
+        </div>
+        <button onclick="closePayoutModal()" class="text-slate-400 hover:text-white transition">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <input type="hidden" id="payout-marketer-id">
+
+      <div class="space-y-3 text-xs">
+        <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
+          <div class="text-slate-400">المسوق: <strong id="payout-marketer-name" class="text-white">...</strong></div>
+          <div class="text-slate-400">الرصيد المستحق حالياً: <span id="payout-current-balance" class="text-emerald-400 font-mono font-bold">0.00 د.ل</span></div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-300 mb-1">المبلغ المصروف (د.ل):</label>
+          <input type="number" id="payout-amount" placeholder="0.00" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-amber-500">
+        </div>
+
+        <div>
+          <label class="block font-medium text-slate-300 mb-1">رقم الإيصال / ملاحظات التحويل:</label>
+          <input type="text" id="payout-notes" placeholder="تحويل بنكي / سداد نقدي رقم #..." class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-amber-500">
+        </div>
+
+        <div id="payout-error" class="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs hidden"></div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button onclick="closePayoutModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs font-medium transition">إلغاء</button>
+        <button onclick="submitMarketerPayout()" id="btn-submit-payout" class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium shadow-lg shadow-amber-600/30 transition">
+          تسجيل الصرف وترحيل القيد
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Marketer Ledger History Modal -->
+  <div id="marketer-ledger-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+    <div class="glass-card max-w-2xl w-full p-6 space-y-4 border-indigo-500/30 max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-indigo-400">receipt_long</span>
+          <h3 class="font-bold text-base text-white" id="ledger-modal-title">كشف حساب المسوق (Ledger)</h3>
+        </div>
+        <button onclick="closeMarketerLedgerModal()" class="text-slate-400 hover:text-white transition">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto flex-1">
+        <table class="w-full text-right text-xs">
+          <thead>
+            <tr class="text-slate-400 border-b border-slate-800 bg-slate-900/40">
+              <th class="p-2.5">المعرف</th>
+              <th class="p-2.5">النوع</th>
+              <th class="p-2.5">المبلغ</th>
+              <th class="p-2.5">الرصيد بعد الحركة</th>
+              <th class="p-2.5">التاريخ</th>
+              <th class="p-2.5">ملاحظات</th>
+            </tr>
+          </thead>
+          <tbody id="marketer-ledger-tbody" class="divide-y divide-slate-800/60 font-mono">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Standalone Discount Code Modal -->
+  <div id="add-discount-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+    <div class="glass-card max-w-md w-full p-6 space-y-4 border-amber-500/30">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-amber-400">add_box</span>
+          <h3 class="font-bold text-base text-white">إصدار كود خصم جديد</h3>
+        </div>
+        <button onclick="closeAddDiscountModal()" class="text-slate-400 hover:text-white transition">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-medium text-slate-300 mb-1">كود الخصم (مثال: WELCOME20):</label>
+          <input type="text" id="disc-code" placeholder="WELCOME20" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono uppercase focus:outline-none focus:border-amber-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">نوع الخصم:</label>
+            <select id="disc-type" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-amber-500">
+              <option value="0">نسبة مئوية (%)</option>
+              <option value="1">مبلغ ثابت (د.ل)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">قيمة الخصم:</label>
+            <input type="number" id="disc-value" value="10" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-amber-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">الحد الأقصى للاستخدام:</label>
+            <input type="number" id="disc-max-uses" placeholder="غير محدود" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">تاريخ الانتهاء:</label>
+            <input type="date" id="disc-expiry" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-amber-500">
+          </div>
+        </div>
+
+        <div id="add-disc-error" class="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs hidden"></div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button onclick="closeAddDiscountModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs font-medium transition">إلغاء</button>
+        <button onclick="submitAddDiscountCode()" id="btn-submit-discount" class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium shadow-lg shadow-amber-600/30 transition">
+          تفعيل كود الخصم
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

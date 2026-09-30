@@ -1,0 +1,400 @@
+<div class="min-h-screen flex flex-col">
+  <!-- ─── Header & Top Navigation Bar ──────────────────────────────────────── -->
+  <header class="glass-card rounded-none border-x-0 border-t-0 px-6 py-4 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+          <span class="material-symbols-outlined text-white text-2xl">grid_view</span>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+            إقفال — لوحة مراقبة النظام والشركة
+          </h1>
+          <p class="text-xs text-slate-400">Eqfal Company Operations & System Monitoring Portal</p>
+        </div>
+      </div>
+
+      <!-- Center Tabs -->
+      <div class="flex items-center gap-1 bg-slate-900/80 p-1.5 rounded-xl border border-slate-800">
+        <button (click)="activeTab = 'dashboard'" [class.bg-indigo-600]="activeTab === 'dashboard'" [class.text-white]="activeTab === 'dashboard'" class="px-4 py-2 rounded-lg text-sm font-medium transition text-slate-300 hover:text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-lg">dashboard</span>
+          اللوحة العامة
+        </button>
+        <button (click)="activeTab = 'sessions'" [class.bg-indigo-600]="activeTab === 'sessions'" [class.text-white]="activeTab === 'sessions'" class="px-4 py-2 rounded-lg text-sm font-medium transition text-slate-300 hover:text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-lg">phonelink_ring</span>
+          الجلسات والمستخدمين
+          <span class="bg-indigo-950 text-indigo-300 text-xs px-2 py-0.5 rounded-full border border-indigo-700/50">{{ sessions.length }}</span>
+        </button>
+        <button (click)="activeTab = 'logs'" [class.bg-indigo-600]="activeTab === 'logs'" [class.text-white]="activeTab === 'logs'" class="px-4 py-2 rounded-lg text-sm font-medium transition text-slate-300 hover:text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-lg">receipt_long</span>
+          سجل الأحداث والأخطاء
+        </button>
+      </div>
+
+      <!-- Right Controls -->
+      <div class="flex items-center gap-3">
+        <button (click)="openPairModal()" class="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-medium px-4 py-2 rounded-xl shadow-lg shadow-emerald-600/20 text-sm flex items-center gap-2 transition">
+          <span class="material-symbols-outlined text-lg">add_link</span>
+          طلب ربط جهاز جديد
+        </button>
+
+        <button (click)="manualRefresh()" class="p-2.5 rounded-xl glass-card text-slate-300 hover:text-white transition hover:bg-slate-800/80" title="تحديث يدوياً">
+          <span class="material-symbols-outlined text-lg">refresh</span>
+        </button>
+
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/60 border border-slate-800">
+          <span [class.pulse-green]="autoRefresh" [class.bg-slate-600]="!autoRefresh"></span>
+          <span class="text-xs text-slate-300">{{ autoRefresh ? 'تحديث حي (3s)' : 'التحديث متوقف' }}</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─── Main Content Container ────────────────────────────────────────────── -->
+  <main class="max-w-7xl mx-auto px-6 py-8 flex-1 w-full space-y-8">
+    
+    <!-- ─── Section 1: Server Health Overview Cards ────────────────────────── -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <!-- C# API Server -->
+      <div class="glass-card p-6 flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-indigo-400">dns</span>
+            <h3 class="font-semibold text-slate-200">سيرفر الـ API الرئيسية</h3>
+          </div>
+          <p class="text-xs text-slate-400">http://localhost:5180 (C# .NET 10)</p>
+          <div class="pt-2">
+            <span [class.badge-up]="health?.apiStatus === 'UP'" [class.badge-down]="health?.apiStatus !== 'UP'">
+              <span class="material-symbols-outlined text-sm">{{ health?.apiStatus === 'UP' ? 'check_circle' : 'cancel' }}</span>
+              {{ health?.apiStatus === 'UP' ? 'يعمل بكفاءة' : 'متوقف' }}
+            </span>
+          </div>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+          <span class="material-symbols-outlined text-2xl">api</span>
+        </div>
+      </div>
+
+      <!-- Node.js WhatsApp Engine -->
+      <div class="glass-card p-6 flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-emerald-400">bolt</span>
+            <h3 class="font-semibold text-slate-200">محرك الواتساب (Evolution API)</h3>
+          </div>
+          <p class="text-xs text-slate-400">http://localhost:3010 (Port 3010)</p>
+          <div class="pt-2">
+            <span [class.badge-up]="health?.nodeStatus === 'UP'" [class.badge-down]="health?.nodeStatus !== 'UP'">
+              <span class="material-symbols-outlined text-sm">{{ health?.nodeStatus === 'UP' ? 'check_circle' : 'cancel' }}</span>
+              {{ health?.nodeStatus === 'UP' ? 'متصل ونشط' : 'غير متاح' }}
+            </span>
+          </div>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+          <span class="material-symbols-outlined text-2xl">forum</span>
+        </div>
+      </div>
+
+      <!-- SQL Server Database -->
+      <div class="glass-card p-6 flex items-center justify-between">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-amber-400">database</span>
+            <h3 class="font-semibold text-slate-200">قاعدة البيانات (SQL Server)</h3>
+          </div>
+          <p class="text-xs text-slate-400">Microsoft SQL Server Database</p>
+          <div class="pt-2">
+            <span [class.badge-up]="health?.databaseStatus === 'UP'" [class.badge-down]="health?.databaseStatus !== 'UP'">
+              <span class="material-symbols-outlined text-sm">{{ health?.databaseStatus === 'UP' ? 'check_circle' : 'cancel' }}</span>
+              {{ health?.databaseStatus === 'UP' ? 'متصلة ومستقرة' : 'فشل الاتصال' }}
+            </span>
+          </div>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+          <span class="material-symbols-outlined text-2xl">storage</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ─── TAB 1: DASHBOARD VIEW ──────────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'dashboard'" class="space-y-8">
+      
+      <!-- Metrics Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        
+        <!-- Active Sessions Count -->
+        <div class="glass-card p-5 space-y-2">
+          <div class="flex items-center justify-between text-slate-400 text-sm">
+            <span>الجلسات النشطة المتصلة</span>
+            <span class="material-symbols-outlined text-indigo-400">phone_android</span>
+          </div>
+          <div class="text-3xl font-bold text-white">
+            {{ metrics?.activeSessions ?? (health?.nodeHealth?.activeSessionsCount ?? 0) }}
+          </div>
+          <p class="text-xs text-emerald-400 flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">verified</span>
+            متزامنة مع SQL Server
+          </p>
+        </div>
+
+        <!-- RAM Memory Usage -->
+        <div class="glass-card p-5 space-y-2">
+          <div class="flex items-center justify-between text-slate-400 text-sm">
+            <span>استهلاك الذاكرة (RAM)</span>
+            <span class="material-symbols-outlined text-violet-400">memory</span>
+          </div>
+          <div class="text-3xl font-bold text-white">
+            {{ formatBytes(health?.nodeHealth?.memoryUsage?.heapUsed || 0) }}
+          </div>
+          <p class="text-xs text-slate-400">
+            الإجمالي: {{ formatBytes(health?.nodeHealth?.memoryUsage?.rss || 0) }}
+          </p>
+        </div>
+
+        <!-- Messages Flow -->
+        <div class="glass-card p-5 space-y-2">
+          <div class="flex items-center justify-between text-slate-400 text-sm">
+            <span>الرسائل (واردة / صادرة)</span>
+            <span class="material-symbols-outlined text-emerald-400">swap_calls</span>
+          </div>
+          <div class="text-3xl font-bold text-white flex items-baseline gap-2">
+            <span>{{ metrics?.messagesReceived ?? 0 }}</span>
+            <span class="text-sm font-normal text-slate-400">/ {{ metrics?.messagesSent ?? 0 }}</span>
+          </div>
+          <p class="text-xs text-slate-400">معدل المعالجة التلقائي</p>
+        </div>
+
+        <!-- Server Uptime -->
+        <div class="glass-card p-5 space-y-2">
+          <div class="flex items-center justify-between text-slate-400 text-sm">
+            <span>مدة تشغيل السيرفر</span>
+            <span class="material-symbols-outlined text-amber-400">schedule</span>
+          </div>
+          <div class="text-2xl font-bold text-white">
+            {{ formatUptime(health?.nodeHealth?.uptimeSeconds) }}
+          </div>
+          <p class="text-xs text-emerald-400 flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">shield</span>
+            استقرار تشغيلي
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Performance Meters & Webhook Queue -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Webhook Deliveries Stats -->
+        <div class="glass-card p-6 space-y-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-indigo-400">alt_route</span>
+              <h3 class="font-semibold text-lg text-slate-100">طابور وتوصيل الـ Webhooks</h3>
+            </div>
+            <span class="text-xs text-slate-400">Max Queue: 10,000</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-4 text-center">
+            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+              <span class="text-xs text-slate-400 block mb-1">ناجحة ✅</span>
+              <span class="text-2xl font-bold text-emerald-400">{{ metrics?.webhookSuccess ?? 0 }}</span>
+            </div>
+            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+              <span class="text-xs text-slate-400 block mb-1">فاشلة ⚠️</span>
+              <span class="text-2xl font-bold text-amber-400">{{ metrics?.webhookFailures ?? 0 }}</span>
+            </div>
+            <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+              <span class="text-xs text-slate-400 block mb-1">مُسقطة ⛔</span>
+              <span class="text-2xl font-bold text-rose-400">{{ metrics?.webhookDropped ?? 0 }}</span>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">طابور الانتظار الحالي:</span>
+              <span class="font-bold text-white">{{ metrics?.webhookQueueLength ?? 0 }} عناصر</span>
+            </div>
+            <div class="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden">
+              <div class="bg-indigo-500 h-2.5 rounded-full transition-all duration-500" [style.width.%]="(metrics?.webhookQueueLength ?? 0) > 0 ? 15 : 0"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Concurrency & Controls -->
+        <div class="glass-card p-6 space-y-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-violet-400">tune</span>
+              <h3 class="font-semibold text-lg text-slate-100">العمالة والربط المتوازي</h3>
+            </div>
+            <span class="badge-up">آمن ومحمي</span>
+          </div>
+
+          <div class="space-y-4">
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+              <span class="text-sm text-slate-300">عمال Webhook النشطين (Workers):</span>
+              <span class="font-bold text-indigo-400">{{ metrics?.activeWebhookWorkers ?? 0 }} / 5</span>
+            </div>
+
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+              <span class="text-sm text-slate-300">أقسام الاقتران النشطة (Pairing Slots):</span>
+              <span class="font-bold text-emerald-400">{{ metrics?.activePairingsCount ?? 0 }} / 5</span>
+            </div>
+
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+              <span class="text-sm text-slate-300">ذاكرة AuthStore المخزنة بالـ RAM:</span>
+              <span class="font-bold text-amber-400">{{ metrics?.authStoresCount ?? 1 }} حسابات</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ─── TAB 2: SESSIONS & ACCOUNTS ────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'sessions'" class="glass-card p-6 space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-bold text-white">إدارة متابعة الجلسات والأجهزة</h2>
+          <p class="text-xs text-slate-400">متابعة اتصال كل مستخدم بحسابات الواتساب المرتبطة</p>
+        </div>
+        <button (click)="openPairModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-xl transition flex items-center gap-2">
+          <span class="material-symbols-outlined text-lg">add_link</span>
+          ربط حساب جديد
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-right border-collapse">
+          <thead>
+            <tr class="border-b border-slate-800 text-slate-400 text-xs uppercase bg-slate-900/40">
+              <th class="p-4">المستخدم</th>
+              <th class="p-4">رقم الهاتف</th>
+              <th class="p-4">حالة الاتصال</th>
+              <th class="p-4">آخر اتصال</th>
+              <th class="p-4 text-center">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 text-sm">
+            <tr *ngFor="let s of sessions" class="hover:bg-slate-800/40 transition">
+              <td class="p-4 font-medium text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center font-bold text-xs">
+                  {{ s.fullName.charAt(0) }}
+                </div>
+                {{ s.fullName }} (#{{ s.userId }})
+              </td>
+              <td class="p-4 text-slate-300 font-mono">{{ s.phone || 'غير مسجل' }}</td>
+              <td class="p-4">
+                <span [class.badge-up]="s.status === 'متصل'" [class.badge-down]="s.status === 'غير مربوط' || s.status === 'مفصول'" [class.badge-warning]="s.status === 'بانتظار الربط'">
+                  <span class="material-symbols-outlined text-sm">{{ s.status === 'متصل' ? 'check_circle' : 'radio_button_unchecked' }}</span>
+                  {{ s.status }}
+                </span>
+              </td>
+              <td class="p-4 text-slate-400 text-xs">{{ s.lastConnected ? (s.lastConnected | date:'short') : 'لم يتصل بعد' }}</td>
+              <td class="p-4 text-center space-x-2 space-x-reverse">
+                <button (click)="triggerUnlink(s.userId)" class="px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 text-xs font-medium transition">
+                  إلغاء الربط
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="sessions.length === 0">
+              <td colspan="5" class="p-8 text-center text-slate-500 text-sm">
+                لا توجد جلسات مسجلة حالياً
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─── TAB 3: LIVE ERROR & SYSTEM LOGS ────────────────────────────────── -->
+    <div *ngIf="activeTab === 'logs'" class="glass-card p-6 space-y-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-bold text-white">سجل الأحداث والأخطاء الحية (System Stream Logs)</h2>
+          <p class="text-xs text-slate-400">متابعة التنبيهات والأخطاء الناشئة بالسيرفر لحظياً</p>
+        </div>
+
+        <div class="flex items-center gap-2 bg-slate-900 p-1 rounded-xl border border-slate-800">
+          <button (click)="logFilter = 'ALL'" [class.bg-indigo-600]="logFilter === 'ALL'" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300">الكل</button>
+          <button (click)="logFilter = 'ERROR'" [class.bg-rose-600]="logFilter === 'ERROR'" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300">الأخطاء 💥</button>
+          <button (click)="logFilter = 'WARN'" [class.bg-amber-600]="logFilter === 'WARN'" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300">التحذيرات ⚠️</button>
+          <button (click)="logFilter = 'SUCCESS'" [class.bg-emerald-600]="logFilter === 'SUCCESS'" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300">الناجحة ✅</button>
+        </div>
+      </div>
+
+      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs space-y-3 max-h-[500px] overflow-y-auto">
+        <div *ngFor="let log of filteredLogs" class="flex items-start gap-3 p-2 rounded hover:bg-slate-900/50 transition">
+          <span class="text-slate-500 shrink-0">{{ log.timestamp }}</span>
+          
+          <span [ngSwitch]="log.type">
+            <span *ngSwitchCase="'SUCCESS'" class="text-emerald-400 font-bold">[SUCCESS]</span>
+            <span *ngSwitchCase="'ERROR'" class="text-rose-400 font-bold">[ERROR]</span>
+            <span *ngSwitchCase="'FATAL'" class="text-rose-500 font-bold bg-rose-950 px-1 rounded">[FATAL]</span>
+            <span *ngSwitchCase="'WARN'" class="text-amber-400 font-bold">[WARN]</span>
+            <span *ngSwitchDefault class="text-indigo-400 font-bold">[INFO]</span>
+          </span>
+
+          <span class="text-slate-400 shrink-0">[{{ log.service }}]:</span>
+          <span class="text-slate-200 flex-1">{{ log.message }}</span>
+        </div>
+
+        <div *ngIf="filteredLogs.length === 0" class="text-slate-600 text-center py-6">
+          لا توجد سجلات مطابقة للفلاتر المختارة
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ─── PAIRING CODE MODAL DIALOG ────────────────────────────────────────── -->
+  <div *ngIf="showPairModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+    <div class="glass-card max-w-md w-full p-6 space-y-6 border-indigo-500/30">
+      
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-indigo-400">phonelink_setup</span>
+          <h3 class="font-bold text-lg text-white">طلب رمز ربط جهاز جديد</h3>
+        </div>
+        <button (click)="closePairModal()" class="text-slate-400 hover:text-white transition">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1.5">معرف المستخدم (UserId):</label>
+          <input type="number" [(ngModel)]="pairUserId" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1.5">رقم الهاتف (مع رمز الدولة بدون +):</label>
+          <input type="text" [(ngModel)]="pairPhone" placeholder="مثال: 218913578201" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm font-mono focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div *ngIf="pairError" class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs">
+          {{ pairError }}
+        </div>
+
+        <div *ngIf="generatedCode" class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-2">
+          <span class="text-xs text-emerald-400 block">✨ رمز الاقتران الخاص بك هو:</span>
+          <span class="text-3xl font-bold font-mono text-emerald-300 tracking-widest">{{ generatedCode }}</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button (click)="closePairModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-sm font-medium transition">
+          إلغاء
+        </button>
+        <button (click)="submitPairing()" [disabled]="pairLoading" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-sm font-medium shadow-lg shadow-indigo-600/30 transition flex items-center gap-2">
+          <span *ngIf="pairLoading" class="material-symbols-outlined text-sm animate-spin">refresh</span>
+          {{ pairLoading ? 'جاري توليد الرمز...' : 'توليد الرمز الآن' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

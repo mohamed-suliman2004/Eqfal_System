@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eqfal App Screen</title>
+  <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700;800&family=Outfit:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 412px;
+      height: 720px;
+      background: #F8FAFC;
+      font-family: 'Readex Pro', -apple-system, sans-serif;
+      color: #1E293B;
+      direction: rtl;
+      text-align: right;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Android Status Bar */
+    .status-bar {
+      height: 28px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      color: #334155;
+      background: #FFFFFF;
+    }
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+    }
+
+    /* Flutter App Bar */
+    .app-bar {
+      height: 54px;
+      background: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid #E2E8F0;
+    }
+    .bar-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .back-btn {
+      font-size: 18px;
+      color: #1E293B;
+    }
+    .bar-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #0F172A;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .bar-title i {
+      font-size: 12px;
+      color: #64748B;
+    }
+    .bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: #475569;
+      font-size: 15px;
+    }
+
+    /* Segmented Tab Bar */
+    .tabs-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #FFFFFF;
+      border-bottom: 1px solid #E2E8F0;
+      gap: 8px;
+    }
+    .tab-item {
+      flex: 1;
+      text-align: center;
+      padding: 6px 4px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 20px;
+      color: #64748B;
+      background: #F1F5F9;
+      white-space: nowrap;
+    }
+    .tab-item.active {
+      background: #EFF6FF;
+      color: #2563EB;
+      border: 1.5px solid #3B82F6;
+      font-weight: 700;
+    }
+
+    /* Operations Feed */
+    .operations-feed {
+      flex: 1;
+      padding: 10px 12px;
+      overflow-y: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #F8FAFC;
+    }
+
+    .op-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+      position: relative;
+    }
+
+    .op-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .op-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .custom-checkbox {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      background: #2563EB;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      font-size: 10px;
+    }
+
+    .amount-box {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      direction: ltr;
+    }
+    .amount-val {
+      font-size: 15px;
+      font-weight: 800;
+      color: #059669;
+      font-family: 'Outfit', sans-serif;
+    }
+    .amount-currency {
+      font-size: 12px;
+      font-weight: 700;
+      color: #059669;
+      font-family: 'Outfit', sans-serif;
+    }
+    .arrow-up {
+      color: #059669;
+      font-size: 11px;
+    }
+
+    .op-right {
+      text-align: right;
+    }
+    .party-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1E293B;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .op-time {
+      font-size: 10px;
+      color: #94A3B8;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    /* Audit Edit Alert Banner */
+    .audit-tag {
+      background: #F0FDF4;
+      border: 1px solid #BBF7D0;
+      border-radius: 7px;
+      padding: 6px 8px;
+      font-size: 10.5px;
+      color: #166534;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      line-height: 1.35;
+    }
+    .audit-tag.edited {
+      background: #EFF6FF;
+      border-color: #BFDBFE;
+      color: #1E40AF;
+    }
+    .audit-tag i {
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+
+    /* Bottom Nav Bar */
+    .bottom-nav {
+      height: 56px;
+      background: #FFFFFF;
+      border-top: 1px solid #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 10px;
+    }
+    .nav-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-size: 9.5px;
+      color: #64748B;
+      font-weight: 600;
+    }
+    .nav-tab.active {
+      color: #2563EB;
+      font-weight: 700;
+    }
+    .nav-tab i {
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Android Status Bar -->
+  <div class="status-bar">
+    <div class="status-time">10:45 ص</div>
+    <div class="status-icons">
+      <i class="fa-solid fa-wifi"></i>
+      <i class="fa-solid fa-signal"></i>
+      <i class="fa-solid fa-battery-full"></i>
+    </div>
+  </div>
+
+  <!-- App Bar -->
+  <div class="app-bar">
+    <div class="bar-title-wrap">
+      <i class="fa-solid fa-arrow-right back-btn"></i>
+      <span class="bar-title">
+        استلام (97)
+        <i class="fa-solid fa-chevron-down"></i>
+      </span>
+    </div>
+    <div class="bar-actions">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <i class="fa-solid fa-filter"></i>
+      <i class="fa-solid fa-file-pdf"></i>
+    </div>
+  </div>
+
+  <!-- Segmented Tabs -->
+  <div class="tabs-bar">
+    <div class="tab-item">الكل (97)</div>
+    <div class="tab-item active">غير مراجعة (51)</div>
+    <div class="tab-item">مراجعة (46)</div>
+    <div class="tab-item">محذوفة (2)</div>
+  </div>
+
+  <!-- Operations List Feed -->
+  <div class="operations-feed">
+    
+    <!-- Card 1 -->
+    <div class="op-card">
+      <div class="op-top">
+        <div class="op-right">
+          <span class="party-name">محمد علي</span>
+          <span class="op-time">10:38 ص</span>
+        </div>
+        <div class="op-left">
+          <div class="amount-box">
+            <span class="amount-val">890.00</span>
+            <span class="amount-currency">LYD</span>
+            <i class="fa-solid fa-arrow-up arrow-up"></i>
+          </div>
+          <div class="custom-checkbox">
+            <i class="fa-solid fa-check"></i>
+          </div>
+        </div>
+      </div>
+      <div class="audit-tag edited">
+        <i class="fa-solid fa-pencil text-blue"></i>
+        <span>تم تعديل الرسالة في الواتساب بعد الاعتماد من 890.00 إلى 890 LYD</span>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="op-card">
+      <div class="op-top">
+        <div class="op-right">
+          <span class="party-name">شركة الأفق للمقاولات</span>
+          <span class="op-time">10:28 ص</span>
+        </div>
+        <div class="op-left">
+          <div class="amount-box">
+            <span class="amount-val">350.00</span>
+            <span class="amount-currency">LYD</span>
+            <i class="fa-solid fa-arrow-up arrow-up"></i>
+          </div>
+          <div class="custom-checkbox">
+            <i class="fa-solid fa-check"></i>
+          </div>
+        </div>
+      </div>
+      <div class="audit-tag edited">
+        <i class="fa-solid fa-pencil text-blue"></i>
+        <span>تم تعديل الرسالة في الواتساب بعد الاعتماد من 350.00 إلى 350 LYD</span>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="op-card">
+      <div class="op-top">
+        <div class="op-right">
+          <span class="party-name">الحاج ناصر الطرابلسي</span>
+          <span class="op-time">09:47 ص</span>
+        </div>
+        <div class="op-left">
+          <div class="amount-box">
+            <span class="amount-val">1,200.00</span>
+            <span class="amount-currency">LYD</span>
+            <i class="fa-solid fa-arrow-up arrow-up"></i>
+          </div>
+          <div class="custom-checkbox">
+            <i class="fa-solid fa-check"></i>
+          </div>
+        </div>
+      </div>
+      <div class="audit-tag">
+        <i class="fa-solid fa-circle-check text-green"></i>
+        <span>سند معتمد ومرحل تلقائياً إلى دفتر الأستاذ العام</span>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="op-card">
+      <div class="op-top">
+        <div class="op-right">
+          <span class="party-name">مكتب السلام للشحن</span>
+          <span class="op-time">08:50 ص</span>
+        </div>
+        <div class="op-left">
+          <div class="amount-box">
+            <span class="amount-val">500.00</span>
+            <span class="amount-currency">LYD</span>
+            <i class="fa-solid fa-arrow-up arrow-up"></i>
+          </div>
+          <div class="custom-checkbox">
+            <i class="fa-solid fa-check"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <div class="nav-tab">
+      <i class="fa-solid fa-house"></i>
+      <span>الرئيسية</span>
+    </div>
+    <div class="nav-tab active">
+      <i class="fa-solid fa-list-check"></i>
+      <span>العمليات</span>
+    </div>
+    <div class="nav-tab">
+      <i class="fa-solid fa-chart-pie"></i>
+      <span>التقارير</span>
+    </div>
+    <div class="nav-tab">
+      <i class="fa-solid fa-gear"></i>
+      <span>الإعدادات</span>
+    </div>
+  </div>
+</body>
+</html>

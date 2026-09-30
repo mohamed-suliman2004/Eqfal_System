@@ -1,0 +1,31 @@
+{
+  "apps": [
+    {
+      "name": "eqfal-whatsapp",
+      "script": "index.js",
+      "cwd": "./",
+      "instances": 1,
+      "autorestart": true,
+      "watch": false,
+      "max_memory_restart": "2G",
+      "env": {
+        "NODE_ENV": "development",
+        "PORT": 3010,
+        "LOG_LEVEL": "info"
+      },
+      "env_production": {
+        "NODE_ENV": "production",
+        "PORT": 3010,
+        "LOG_LEVEL": "warn",
+        "SERVICE_API_KEY": "eqfal_sec_wa_2026_internal_key_8f92a3"
+      },
+      "error_file": "./logs/err.log",
+      "out_file": "./logs/out.log",
+      "merge_logs": true,
+      "time": true,
+      "kill_timeout": 10000,
+      "listen_timeout": 10000,
+      "shutdown_with_message": true
+    }
+  ]
+}

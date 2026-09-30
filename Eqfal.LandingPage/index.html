@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>منظومة إقفال | إدارة العمليات المالية والمحاسبية الذكية عبر واتساب</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="إقفال هي المنظومة الأولى لتحويل رسائل ومجموعات واتساب إلى قيود محاسبية وسندات مالية مؤتمتة، مع كشف الحسابات اللحظي وتتبع تعديل وحذف الرسائل بدقة متناهية.">
+  <meta name="keywords" content="إقفال, منظومة إقفال, محاسبة واتساب, قيود يومية, كشف حساب, تتبع رسائل واتساب, إدارة مالية ليبيا, مستند">
+  <meta name="author" content="شركة المستند للحلول البرمجية والذكاء الاصطناعي">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:title" content="منظومة إقفال | أسرع وأدق نظام لإقفال الحسابات عبر واتساب">
+  <meta property="og:description" content="حول كل رسالة واتساب إلى قيد محاسبي وسند رسمي فوراً. ودّع أخطاء الحسابات وتعديل الرسائل مع نظام إقفال الذكي.">
+  <meta property="og:image" content="assets/feature_graphic.png">
+  <meta property="og:url" content="https://eqfall.mostanad.ly">
+  <meta property="og:type" content="website">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/app_icon.png">
+  <link rel="apple-touch-icon" href="assets/app_icon.png">
+
+  <!-- Google Fonts: Readex Pro & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Theme Initialization Script (Light Mode Default) -->
+  <script>
+    (function() {
+      var savedTheme = localStorage.getItem('eqfal_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Ambient Glowing Background Orbs -->
+  <div class="ambient-glow orb-1"></div>
+  <div class="ambient-glow orb-2"></div>
+  <div class="ambient-glow orb-3"></div>
+
+  <!-- Header / Navigation Bar -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-container">
+      <a href="#" class="brand-logo-wrap" aria-label="الصفحة الرئيسية لمنظومة إقفال">
+        <img src="assets/logo.png" alt="شعار منظومة إقفال" class="brand-logo-img logo-light">
+        <img src="assets/logo_white.png" alt="شعار منظومة إقفال" class="brand-logo-img logo-dark">
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav class="nav-links" id="navMenu">
+        <a href="#home" class="nav-link active">الرئيسية</a>
+        <a href="#how-it-works" class="nav-link">كيف يعمل؟</a>
+        <a href="#smart-features" class="nav-link">المميزات</a>
+        <a href="#pricing" class="nav-link">أسعار الباقات</a>
+        <a href="#faq" class="nav-link">الأسئلة الشائعة</a>
+        <button type="button" class="nav-link" id="btnOpenSupportNav" style="background: none; border: none; cursor: pointer; font-family: inherit; font-size: inherit; color: inherit; padding: 0.5rem 0.75rem;">تواصل معنا</button>
+      </nav>
+
+      <!-- Action Buttons -->
+      <div class="nav-actions">
+        <!-- Theme Toggle Button (Light/Dark Mode) -->
+        <button type="button" class="theme-toggle-btn" id="themeToggleBtn" aria-label="تبديل الوضع النهاري / الليلي" title="تبديل الوضع النهاري / الليلي">
+          <i class="fa-solid fa-moon icon-moon"></i>
+          <i class="fa-solid fa-sun icon-sun"></i>
+        </button>
+
+        <a href="https://eqfall.mostanad.ly/app/" class="btn btn-primary" id="btn-download-nav">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>ابدأ الآن</span>
+        </a>
+        <button class="mobile-toggle" id="menuToggle" aria-label="فتح القائمة">
+          <i class="fa-solid fa-bars-staggered"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer Menu -->
+  <div class="mobile-drawer" id="mobileDrawer">
+    <div class="drawer-header">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <img src="assets/logo.png" alt="إقفال" class="brand-logo-img logo-light" style="height: 36px;">
+        <img src="assets/logo_white.png" alt="إقفال" class="brand-logo-img logo-dark" style="height: 36px;">
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <button type="button" class="theme-toggle-btn drawer-theme-toggle" aria-label="تبديل الوضع" title="تبديل الوضع">
+          <i class="fa-solid fa-moon icon-moon"></i>
+          <i class="fa-solid fa-sun icon-sun"></i>
+        </button>
+        <button class="drawer-close" id="drawerClose" aria-label="إغلاق القائمة">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+    <div class="drawer-links">
+      <a href="#how-it-works" class="drawer-link">كيف يعمل إقفال؟</a>
+      <a href="#dashboard" class="drawer-link">لوحة العمليات</a>
+      <a href="#smart-features" class="drawer-link">حلول ومميزات إقفال</a>
+      <a href="#pricing" class="drawer-link">أسعار الباقات</a>
+      <a href="#faq" class="drawer-link">الأسئلة الشائعة</a>
+    </div>
+    <div class="drawer-footer">
+      <a href="https://play.google.com/store/apps/details?id=ly.mostanad.eqfal_app" target="_blank" class="btn btn-primary btn-block">
+        <i class="fa-brands fa-google-play"></i> تحميل التطبيق (Google Play)
+      </a>
+      <button type="button" class="btn btn-support btn-block" id="btnOpenSupportDrawer">
+        <i class="fa-solid fa-headset"></i> الدعم الفني والمساعدة
+      </button>
+    </div>
+  </div>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero-section" id="home">
+      <div class="container hero-container">
+        
+        <div class="hero-content hero-content-col">
+          <span class="hero-tag-simple">
+            <span class="badge-dot-live"></span>
+            إقفال
+          </span>
+
+          <h1 class="hero-title-main">
+            من رسائل واتساب<br>
+            <span class="hero-highlight-green">إلى عمليات منظمة</span>
+          </h1>
+
+          <p class="hero-desc-main">
+            إقفال يحول رسائل الاستلام والتسليم التي تصلك عبر واتساب إلى عمليات واضحة، قابلة للمراجعة والتعديل والتصدير.
+          </p>
+
+          <div class="hero-buttons-main">
+            <a href="https://eqfall.mostanad.ly/app/" class="btn-hero-start">
+              <i class="fa-solid fa-arrow-left"></i>
+              <span>ابدأ الآن</span>
+            </a>
+            <a href="#how-it-works" class="btn-hero-watch">
+              <i class="fa-solid fa-circle-play"></i>
+              <span>شاهد كيف يعمل</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Left Column: Dual Phone Visual Mockup (Exact Match to Screenshot) -->
+        <div class="hero-visual-col">
+          <div class="hero-dual-phones-wrapper">
+            <!-- Ambient Glow Backdrop & Mint Graphic Card Behind Phone -->
+            <div class="hero-dual-backdrop"></div>
+            <div class="hero-mint-bg-card"></div>
+            <div class="hero-mint-bg-card-right"></div>
+
+            <!-- Phone 1: WhatsApp Interface (Left - Tilted) -->
+            <div class="dual-phone-wa">
+              <!-- Top iPhone Notch & Speaker -->
+              <div class="wa-phone-notch">
+                <span class="notch-speaker"></span>
+                <span class="notch-cam"></span>
+              </div>
+
+              <!-- Top Status Bar -->
+              <div class="phone-status-bar wa-status-bar">
+                <span class="status-time">10:24</span>
+                <div class="status-icons">
+                  <i class="fa-solid fa-signal"></i>
+                  <i class="fa-solid fa-wifi"></i>
+                  <i class="fa-solid fa-battery-full"></i>
+                </div>
+              </div>
+
+              <!-- Floating 3D Squircle WhatsApp icon on LEFT side -->
+              <div class="wa-floating-badge" title="واتساب WhatsApp">
+                <i class="fa-brands fa-whatsapp"></i>
+              </div>
+
+              <!-- WhatsApp Topbar -->
+              <div class="wa-phone-topbar">
+                <i class="fa-solid fa-chevron-right wa-back-btn"></i>
+                <div class="wa-avatar-wrap">
+                  <i class="fa-solid fa-user"></i>
+                </div>
+                <div class="wa-chat-header-info">
+                  <span class="wa-topbar-title">حساب العمل والتجارة</span>
+                </div>
+                <div class="wa-header-actions">
+                  <i class="fa-solid fa-phone"></i>
+                  <i class="fa-solid fa-ellipsis-vertical"></i>
+                </div>
+              </div>
+
+              <!-- Chat Messages Body -->
+              <div class="wa-phone-chat-body">
+                <!-- Message 1 -->
+                <div class="wa-chat-bubble-card">
+                  <div class="wa-bubble-msg">سلمت 500 دولار لأحمد</div>
+                  <div class="wa-bubble-meta">
+                    <span class="wa-bubble-time">10:24</span>
+                    <i class="fa-solid fa-check-double wa-check-read"></i>
+                  </div>
+                </div>
+
+                <!-- Message 2 -->
+                <div class="wa-chat-bubble-card">
+                  <div class="wa-bubble-msg">استلمت 2000 دينار من محمد</div>
+                  <div class="wa-bubble-meta">
+                    <span class="wa-bubble-time">11:15</span>
+                    <i class="fa-solid fa-check-double wa-check-read"></i>
+                  </div>
+                </div>
+
+                <!-- Message 3 -->
+                <div class="wa-chat-bubble-card">
+                  <div class="wa-bubble-msg">قبضت 300 يورو من خالد</div>
+                  <div class="wa-bubble-meta">
+                    <span class="wa-bubble-time">12:00</span>
+                    <i class="fa-solid fa-check-double wa-check-read"></i>
+                  </div>
+                </div>
+
+                <!-- Message 4 -->
+                <div class="wa-chat-bubble-card">
+                  <div class="wa-bubble-msg">سلمت 500 لمحمد عن طريق أحمد</div>
+                  <div class="wa-bubble-meta">
+                    <span class="wa-bubble-time">12:30</span>
+                    <i class="fa-solid fa-check-double wa-check-read"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Phone Bottom Navigation Bar (Back, Home, Recents) -->
+              <div class="phone-bottom-nav wa-bottom-nav">
+                <span class="nav-btn nav-btn-recents" title="التطبيقات الحديثة"><i class="fa-solid fa-bars"></i></span>
+                <span class="nav-btn nav-btn-home" title="الرئيسية"></span>
+                <span class="nav-btn nav-btn-back" title="رجوع"><i class="fa-solid fa-chevron-left"></i></span>
+              </div>
+            </div>
+
+            <!-- Connecting Transformation Curved Arrow (Pointing Right towards Eqfal Phone) -->
+            <div class="dual-connector-arrow">
+              <svg viewBox="0 0 65 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Smooth curved green arrow from left (WhatsApp Msg 1) to right (Eqfal Details) -->
+                <path d="M 6 28 C 24 14, 44 12, 54 18" stroke="#10B981" stroke-width="4.5" stroke-linecap="round"/>
+                <polygon points="48,10 62,19 49,27" fill="#10B981"/>
+              </svg>
+            </div>
+
+            <!-- Phone 2: Eqfal App Screen (Upright) -->
+            <div class="dual-phone-eqfal">
+              <!-- Teardrop Notch -->
+              <div class="eqfal-phone-notch">
+                <span class="teardrop-cam"></span>
+              </div>
+
+              <!-- Top Status Bar -->
+              <div class="phone-status-bar eqfal-status-bar">
+                <span class="status-time">10:24</span>
+                <div class="status-icons">
+                  <i class="fa-solid fa-signal"></i>
+                  <i class="fa-solid fa-wifi"></i>
+                  <i class="fa-solid fa-battery-full"></i>
+                </div>
+              </div>
+
+              <!-- Top Bar -->
+              <div class="eqfal-phone-topbar">
+                <div class="eqfal-topbar-title-wrap">
+                  <i class="fa-solid fa-chevron-right"></i>
+                  <h4>تفاصيل العملية</h4>
+                </div>
+                <span class="eqfal-completed-pill">
+                  <i class="fa-solid fa-circle-check"></i> مكتملة
+                </span>
+              </div>
+
+              <!-- Details Body: RTL alignment matching reference -->
+              <div class="eqfal-phone-detail-body">
+                <!-- Row 1: نوع العملية -->
+                <div class="eqfal-detail-row">
+                  <span class="detail-label-text">نوع العملية</span>
+                  <div class="detail-value-wrap">
+                    <span class="detail-pill-tasleem">تسليم</span>
+                  </div>
+                  <div class="row-icon-box">
+                    <i class="fa-solid fa-file-invoice"></i>
+                  </div>
+                </div>
+
+                <!-- Row 2: المبلغ -->
+                <div class="eqfal-detail-row">
+                  <span class="detail-label-text">المبلغ</span>
+                  <div class="detail-value-wrap">
+                    <strong class="detail-val-side">500</strong>
+                  </div>
+                  <div class="row-icon-box">
+                    <i class="fa-solid fa-vault"></i>
+                  </div>
+                </div>
+
+                <!-- Row 3: العملة -->
+                <div class="eqfal-detail-row">
+                  <span class="detail-label-text">العملة</span>
+                  <div class="detail-value-wrap">
+                    <strong class="detail-val-side">دولار</strong>
+                  </div>
+                  <div class="row-icon-box">
+                    <i class="fa-solid fa-money-bill-wave"></i>
+                  </div>
+                </div>
+
+                <!-- Row 4: الجهة -->
+                <div class="eqfal-detail-row">
+                  <span class="detail-label-text">الجهة</span>
+                  <div class="detail-value-wrap">
+                    <strong class="detail-val-side">أحمد</strong>
+                  </div>
+                  <div class="row-icon-box">
+                    <i class="fa-solid fa-user"></i>
+                  </div>
+                </div>
+
+                <!-- Row 5: التاريخ -->
+                <div class="eqfal-detail-row">
+                  <span class="detail-label-text">التاريخ</span>
+                  <div class="detail-value-wrap">
+                    <span class="detail-val-side detail-val-date">2024/06/20 10:24</span>
+                  </div>
+                  <div class="row-icon-box">
+                    <i class="fa-regular fa-calendar"></i>
+                  </div>
+                </div>
+
+                <!-- Row 6: ملاحظات -->
+                <div class="eqfal-detail-row" style="border-bottom: none;">
+                  <span class="detail-label-text">ملاحظات</span>
+                  <div class="detail-value-wrap">
+                    <span class="detail-val-side">-</span>
+                  </div>
+                  <div class="row-icon-box">
+                    <i class="fa-regular fa-note-sticky"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Phone Bottom Navigation Bar (Back, Home, Recents) -->
+              <div class="phone-bottom-nav eqfal-bottom-nav">
+                <span class="nav-btn nav-btn-recents" title="التطبيقات الحديثة"><i class="fa-solid fa-bars"></i></span>
+                <span class="nav-btn nav-btn-home" title="الرئيسية"></span>
+                <span class="nav-btn nav-btn-back" title="رجوع"><i class="fa-solid fa-chevron-left"></i></span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 2: Pain Points ("عملياتك موجودة في واتساب... لكن هل هي منظمة؟") -->
+    <section class="pain-points-section" id="pain-points">
+      <div class="container">
+        
+        <!-- Header Grid: Left Illustration + Right Title/Subtitle -->
+        <div class="pain-header-grid">
+          
+          <!-- Right: Text matching user screenshot (First in RTL) -->
+          <div class="pain-header-text">
+            <h2 class="pain-main-title">
+              عملياتك موجودة في واتساب...<br>
+              <span>لكن هل هي منظمة؟</span>
+            </h2>
+            <p class="pain-main-subtitle">
+              توصلك يومياً عشرات الرسائل المتعلقة بعمليات الاستلام والتسليم<br>
+              وغالباً ما تكون متفرقة وغير منظمة مما يسبب:
+            </p>
+          </div>
+
+          <!-- Left: Illustration matching user screenshot -->
+          <div class="pain-header-visual">
+            <div class="pain-illus-card-wrap">
+              <div class="pain-illus-blob"></div>
+              
+              <div class="pain-illus-bubble bubble-top">
+                <div class="illus-line line-short"></div>
+                <div class="illus-line line-long"></div>
+              </div>
+              
+              <div class="pain-illus-bubble bubble-bottom">
+                <div class="illus-line line-long"></div>
+                <div class="illus-line line-medium"></div>
+              </div>
+              
+              <div class="pain-illus-wa-badge" title="واتساب">
+                <i class="fa-brands fa-whatsapp"></i>
+              </div>
+              
+              <div class="pain-illus-alert-badge" title="تنبيه">
+                <i class="fa-solid fa-exclamation"></i>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 4 Problem Cards in a single row -->
+        <div class="pain-cards-row">
+          
+          <!-- Card 1 (Far Right in RTL) -->
+          <div class="pain-feature-card">
+            <div class="pain-feature-icon">
+              <i class="fa-regular fa-comment-dots"></i>
+            </div>
+            <h3 class="pain-feature-title">
+              رسائل متفرقة<br>
+              من أشخاص متعددين
+            </h3>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="pain-feature-card">
+            <div class="pain-feature-icon">
+              <i class="fa-regular fa-clock"></i>
+            </div>
+            <h3 class="pain-feature-title">
+              صعوبة متابعة<br>
+              بعض العمليات
+            </h3>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="pain-feature-card">
+            <div class="pain-feature-icon">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <h3 class="pain-feature-title">
+              صعوبة البحث<br>
+              والمراجعة
+            </h3>
+          </div>
+
+          <!-- Card 4 (Far Left in RTL) -->
+          <div class="pain-feature-card">
+            <div class="pain-feature-icon">
+              <i class="fa-regular fa-file-lines"></i>
+            </div>
+            <h3 class="pain-feature-title">
+              النسخ اليدوي<br>
+              وأخطاء متكررة
+            </h3>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 3: How It Works ("كيف يعمل إقفال؟") -->
+    <section class="how-it-works-redesign" id="how-it-works">
+      <div class="container">
+        
+        <!-- Header: Right-aligned matching screenshot -->
+        <div class="how-it-works-header">
+          <h2 class="how-main-title">كيف يعمل إقفال؟</h2>
+          <p class="how-main-subtitle">خطوات بسيطة لتنظيم عملياتك من رسائل واتساب.</p>
+        </div>
+
+        <!-- 5 Steps Flow Card Container -->
+        <div class="how-flow-box">
+          <div class="how-flow-track">
+            
+            <!-- Step 1 (Far Right in RTL) -->
+            <div class="how-flow-step">
+              <div class="step-icon-bubble step-icon-wa">
+                <i class="fa-brands fa-whatsapp"></i>
+              </div>
+              <span class="step-num-pill">1</span>
+              <h3 class="step-title-text">اربط واتساب</h3>
+              <p class="step-desc-text">اربط حساب واتساب المستخدم بالنظام.</p>
+            </div>
+
+            <!-- Flow Arrow 1-2 -->
+            <div class="flow-step-arrow">
+              <svg viewBox="0 0 40 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M36 8H4M4 8L10 2M4 8L10 14" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="how-flow-step">
+              <div class="step-icon-bubble step-icon-users">
+                <i class="fa-solid fa-users"></i>
+              </div>
+              <span class="step-num-pill">2</span>
+              <h3 class="step-title-text">حدد الأرقام</h3>
+              <p class="step-desc-text">اختر الأشخاص أو الأرقام التي تريد متابعة رسائلها.</p>
+            </div>
+
+            <!-- Flow Arrow 2-3 -->
+            <div class="flow-step-arrow">
+              <svg viewBox="0 0 40 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M36 8H4M4 8L10 2M4 8L10 14" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="how-flow-step">
+              <div class="step-icon-bubble step-icon-chat">
+                <i class="fa-regular fa-comment-dots"></i>
+              </div>
+              <span class="step-num-pill">3</span>
+              <h3 class="step-title-text">استمر في استخدام واتساب</h3>
+              <p class="step-desc-text">لا يحتاج فريقك إلى تغيير طريقة عمله المعتادة.</p>
+            </div>
+
+            <!-- Flow Arrow 3-4 -->
+            <div class="flow-step-arrow">
+              <svg viewBox="0 0 40 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M36 8H4M4 8L10 2M4 8L10 14" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="how-flow-step">
+              <div class="step-icon-bubble step-icon-doc">
+                <i class="fa-solid fa-file-invoice"></i>
+              </div>
+              <span class="step-num-pill">4</span>
+              <h3 class="step-title-text">إقفال ينظم الرسائل</h3>
+              <p class="step-desc-text">يقرأ رسائل العمليات ويستخرج المعلومات المهمة منها.</p>
+            </div>
+
+            <!-- Flow Arrow 4-5 -->
+            <div class="flow-step-arrow">
+              <svg viewBox="0 0 40 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M36 8H4M4 8L10 2M4 8L10 14" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <!-- Step 5 (Far Left in RTL) -->
+            <div class="how-flow-step">
+              <div class="step-icon-bubble step-icon-check">
+                <i class="fa-solid fa-circle-check"></i>
+              </div>
+              <span class="step-num-pill">5</span>
+              <h3 class="step-title-text">راجع واعتمد</h3>
+              <p class="step-desc-text">راجع العمليات، أكمل الناقص منها واستخدمها في عملك أو صدرها.</p>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 4: Dashboard Showcase ("كل عملياتك في مكان واحد") -->
+    <section class="dashboard-showcase-section" id="dashboard">
+      <div class="container">
+        
+        <div class="dash-exact-grid">
+          
+          <!-- Right Column: Text & Features List (First in RTL) -->
+          <div class="dash-exact-info-col">
+            <h2 class="dash-exact-title">
+              كل عملياتك<br>
+              في مكان واحد
+            </h2>
+            
+            <p class="dash-exact-desc">
+              استعرض عمليات الاستلام والتسليم<br>
+              في مكان واحد، وابحث بينها، وافلترها<br>
+              وراجع تفاصيلها، بسهولة.
+            </p>
+
+            <div class="dash-exact-features-list">
+              <!-- Feature 1 -->
+              <div class="dash-exact-feat-item">
+                <span class="dash-feat-icon-box">
+                  <i class="fa-solid fa-users"></i>
+                </span>
+                <span class="dash-feat-item-text">عرض العمليات (الكل / استلام / تسليم)</span>
+              </div>
+
+              <!-- Feature 2 -->
+              <div class="dash-exact-feat-item">
+                <span class="dash-feat-icon-box">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <span class="dash-feat-item-text">البحث والفلترة</span>
+              </div>
+
+              <!-- Feature 3 -->
+              <div class="dash-exact-feat-item">
+                <span class="dash-feat-icon-box">
+                  <i class="fa-regular fa-pen-to-square"></i>
+                </span>
+                <span class="dash-feat-item-text">تعديل تفاصيل العملية</span>
+              </div>
+
+              <!-- Feature 4 -->
+              <div class="dash-exact-feat-item">
+                <span class="dash-feat-icon-box">
+                  <i class="fa-solid fa-download"></i>
+                </span>
+                <span class="dash-feat-item-text">التصدير إلى Excel أو PDF</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Left Column: Realistic Laptop Mockup with Eqfal Web App -->
+          <div class="dash-exact-mockup-col">
+            <div class="laptop-device-frame">
+              
+              <!-- Laptop Screen -->
+              <div class="laptop-screen">
+                <div class="laptop-web-app">
+                  
+                  <!-- Main App Content (Left Side in RTL) -->
+                  <div class="laptop-main-pane">
+                    
+                    <!-- Top Action Bar -->
+                    <div class="laptop-app-topbar">
+                      <button class="laptop-btn-add">
+                        <i class="fa-solid fa-plus"></i> إضافة عملية
+                      </button>
+                      
+                      <div class="laptop-search-input">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>بحث...</span>
+                      </div>
+                    </div>
+
+                    <!-- Category Tabs Bar -->
+                    <div class="laptop-tabs-bar">
+                      <span class="lap-tab active">الكل</span>
+                      <span class="lap-tab">استلام</span>
+                      <span class="lap-tab lap-tab-tasleem">تسليم</span>
+                      <span class="lap-tab">يحتاج إكمال</span>
+                    </div>
+
+                    <!-- Data Table -->
+                    <div class="laptop-table-wrap">
+                      <table class="laptop-data-table">
+                        <thead>
+                          <tr>
+                            <th>التاريخ</th>
+                            <th>الجهة</th>
+                            <th>العملة</th>
+                            <th>المبلغ</th>
+                            <th>النوع</th>
+                            <th>الحالة</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>2024/06/20</td>
+                            <td>أحمد </td>
+                            <td>دولار</td>
+                            <td>500</td>
+                            <td><span class="lap-type-tasleem">تسليم</span></td>
+                            <td><span class="lap-pill-done">مكتملة</span></td>
+                          </tr>
+                          <tr>
+                            <td>2024/06/20</td>
+                            <td>محمد </td>
+                            <td>دينار</td>
+                            <td>2,000</td>
+                            <td><span class="lap-type-istilam">استلام</span></td>
+                            <td><span class="lap-pill-done">مكتملة</span></td>
+                          </tr>
+                          <tr>
+                            <td>2024/06/19</td>
+                            <td>خالد </td>
+                            <td>يورو</td>
+                            <td>300</td>
+                            <td><span class="lap-type-tasleem">تسليم</span></td>
+                            <td><span class="lap-pill-done">مكتملة</span></td>
+                          </tr>
+                          <tr>
+                            <td>2024/06/18</td>
+                            <td>محمود </td>
+                            <td>دولار</td>
+                            <td><span class="lap-val-missing">غير محدد</span></td>
+                            <td><span class="lap-type-tasleem">تسليم</span></td>
+                            <td><span class="lap-pill-need">يحتاج إكمال</span></td>
+                          </tr>
+                          <tr>
+                            <td>2024/06/18</td>
+                            <td>علي  </td>
+                            <td>دينار</td>
+                            <td>1,000</td>
+                            <td><span class="lap-type-istilam">استلام</span></td>
+                            <td><span class="lap-pill-done">مكتملة</span></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                  </div>
+
+                  <!-- Right Sidebar: Menu -->
+                  <div class="laptop-sidebar-pane">
+                    <!-- Brand -->
+                    <div class="laptop-side-brand">
+                      <img src="assets/logo.png" alt="إقفال" class="laptop-side-logo logo-light">
+                      <img src="assets/logo_white.png" alt="إقفال" class="laptop-side-logo logo-dark">
+                      <span class="laptop-side-brand-name">إقفال</span>
+                    </div>
+
+                    <!-- Menu Nav -->
+                    <nav class="laptop-side-nav">
+                      <div class="lap-nav-item active">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>العمليات</span>
+                      </div>
+                      <div class="lap-nav-item">
+                        <i class="fa-regular fa-clock"></i>
+                        <span>يحتاج إكمال</span>
+                      </div>
+                      <div class="lap-nav-item">
+                        <i class="fa-solid fa-address-book"></i>
+                        <span>الأرقام</span>
+                      </div>
+                      <div class="lap-nav-item">
+                        <i class="fa-solid fa-tags"></i>
+                        <span>الكلمات المفتاحية</span>
+                      </div>
+                      <div class="lap-nav-item">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>التقارير</span>
+                      </div>
+                      <div class="lap-nav-item">
+                        <i class="fa-solid fa-gear"></i>
+                        <span>الإعدادات</span>
+                      </div>
+                    </nav>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Laptop Base / Hinge with notch -->
+              <div class="laptop-base-stand">
+                <div class="laptop-base-notch"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4. The Single Interactive Flipping Card (طلب المستخدم الرئيسي: كارت واحد يقلب بين المزايا الـ 6) -->
+    <section class="feature-flipper-section" id="smart-features">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag"><i class="fa-solid fa-wand-magic-sparkles"></i> الابتكار المحاسبي</span>
+          <h2 class="section-title">حلول صُممت <span class="gradient-text">لتناسب أسلوب عملك</span></h2>
+          <p class="section-subtitle">استكشف مميزات إقفال الذكية من خلال الكارت التفاعلي</p>
+        </div>
+
+        <!-- Horizontal Nav Tabs for the 6 Features -->
+        <div class="flipper-navigation-pills">
+          <button type="button" class="flipper-tab-btn active" data-slide-index="0">
+            <i class="fa-solid fa-tags"></i>
+            <span>الكلمات المفتاحية</span>
+          </button>
+          <button type="button" class="flipper-tab-btn" data-slide-index="1">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>يحتاج إكمال</span>
+          </button>
+          <button type="button" class="flipper-tab-btn" data-slide-index="2">
+            <i class="fa-solid fa-file-export"></i>
+            <span>التصدير</span>
+          </button>
+          <button type="button" class="flipper-tab-btn" data-slide-index="3">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>البحث والفلترة</span>
+          </button>
+          <button type="button" class="flipper-tab-btn" data-slide-index="4">
+            <i class="fa-solid fa-building-columns"></i>
+            <span>لمن إقفال؟</span>
+          </button>
+          <button type="button" class="flipper-tab-btn" data-slide-index="5">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>الخصوصية</span>
+          </button>
+        </div>
+
+        <!-- The Main Flipping Card Frame -->
+        <div class="flipper-main-card">
+          <!-- Timer Progress Bar -->
+          <div class="flipper-timer-bar-wrap">
+            <div class="flipper-timer-bar-fill"></div>
+          </div>
+
+          <!-- Slides Wrapper (Contains 6 Flipping Slides) -->
+          <!-- Slides Wrapper (Contains 6 Flipping Slides) -->
+          <div class="flipper-slides-wrapper">
+            
+            <!-- Slide 0: الكلمات المفتاحية -->
+            <div class="flipper-slide active slide-centered card-bg-keywords" data-index="0">
+              <div class="slide-content-stack">
+                <span class="slide-category-pill pill-blue">الكلمات المفتاحية</span>
+                <h3 class="slide-title">يتوافق مع طريقة عمل فريقك</h3>
+                <p class="slide-desc">
+                  أنت تحدد الكلمات التي يستخدمها فريقك للتعبير عن الاستلام والتسليم ليستخدمها إقفال في تنظيم العمليات.
+                </p>
+                <div class="mock-keywords-container">
+                  <div class="mock-kw-card kw-delivery">
+                    <div class="mock-kw-header">
+                      <span class="kw-icon-box red-box">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="17 8 12 3 7 8"/>
+                          <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                      </span>
+                      <h4 class="mock-kw-heading">كلمات التسليم</h4>
+                    </div>
+                    <p class="mock-kw-phrases">سلمت، دفعت، عطيت،<br>حولت، سلم إلى...</p>
+                  </div>
+                  <div class="mock-kw-card kw-receipt">
+                    <div class="mock-kw-header">
+                      <span class="kw-icon-box green-box">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="7 10 12 15 17 10"/>
+                          <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                      </span>
+                      <h4 class="mock-kw-heading">كلمات الاستلام</h4>
+                    </div>
+                    <p class="mock-kw-phrases">استلمت، استلم، قبضت،<br>وصلني، استلم من...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 1: يحتاج إكمال -->
+            <div class="flipper-slide slide-split card-bg-incomplete" data-index="1">
+              <div class="slide-text-col">
+                <span class="slide-category-pill pill-amber">يحتاج إكمال</span>
+                <h3 class="slide-title">المعلومات الناقصة لا تضيع</h3>
+                <p class="slide-desc">
+                  إذا كانت الرسالة لا تحتوي على جميع المعلومات المطلوبة، يضعها إقفال ضمن "يحتاج إكمال" لتراجعها وتستكمل بياناتها بنفسك.
+                </p>
+              </div>
+              <div class="slide-visual-col">
+                <div class="mock-incomplete-phone">
+                  <div class="mock-phone-nav-bar">
+                    <i class="fa-solid fa-gear text-muted"></i>
+                    <span class="mock-phone-title">يحتاج إكمال</span>
+                    <i class="fa-solid fa-chevron-left text-muted"></i>
+                  </div>
+                  <div class="mock-phone-cards-list">
+                    <div class="mock-incomplete-card">
+                      <div class="mock-inc-right">
+                        <i class="fa-solid fa-triangle-exclamation text-amber"></i>
+                        <div>
+                          <div class="mock-inc-title">استلم من محمد</div>
+                          <div class="mock-inc-sub">مبلغ غير محدد</div>
+                        </div>
+                      </div>
+                      <span class="mock-inc-tag-received">استلمت</span>
+                    </div>
+                    <div class="mock-incomplete-card">
+                      <div class="mock-inc-right">
+                        <i class="fa-solid fa-circle-exclamation text-red"></i>
+                        <div>
+                          <div class="mock-inc-title">سلمت لمحمد</div>
+                          <div class="mock-inc-sub">عملة غير محددة</div>
+                        </div>
+                      </div>
+                      <span class="mock-inc-tag-received">استلمت</span>
+                    </div>
+                    <div class="mock-incomplete-card">
+                      <div class="mock-inc-right">
+                        <i class="fa-solid fa-triangle-exclamation text-amber"></i>
+                        <div>
+                          <div class="mock-inc-title">قبضت من خالد</div>
+                          <div class="mock-inc-sub">جهة غير محددة</div>
+                        </div>
+                      </div>
+                      <span class="mock-inc-tag-received">استلمت</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 2: التصدير -->
+            <div class="flipper-slide slide-centered card-bg-export" data-index="2">
+              <div class="slide-content-stack">
+                <span class="slide-category-pill pill-green">التصدير</span>
+                <h3 class="slide-title">خذ بياناتك معك</h3>
+                <p class="slide-desc">
+                  بعد تنظيم العمليات، يمكنك تصدير البيانات لاستخدامها في أعمال المراجعة والجرد والمطابقة.
+                </p>
+                <div class="mock-export-container">
+                  <div class="mock-export-btn-box export-excel">
+                    <div class="mock-export-icon excel">
+                      <i class="fa-solid fa-file-excel"></i>
+                    </div>
+                    <span class="mock-export-title">تصدير إلى Excel</span>
+                  </div>
+                  <div class="mock-export-btn-box export-pdf">
+                    <div class="mock-export-icon pdf">
+                      <i class="fa-solid fa-file-pdf"></i>
+                    </div>
+                    <span class="mock-export-title">تصدير إلى PDF</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 3: البحث والفلترة -->
+            <div class="flipper-slide slide-centered card-bg-filters" data-index="3">
+              <div class="slide-content-stack">
+                <span class="slide-category-pill pill-purple">البحث والفلترة</span>
+                <h3 class="slide-title">اعثر على العملية التي تبحث عنها بسرعة</h3>
+                <p class="slide-desc">
+                  ابحث وفق التاريخ، نوع العملية، العملة، الجهة، حالة العملية وغيرها.
+                </p>
+                <div class="mock-filters-container">
+                  <div class="mock-filter-chip">
+                    <div class="filter-icon-box"><i class="fa-regular fa-calendar-days text-blue"></i></div>
+                    <span class="filter-label">التاريخ</span>
+                  </div>
+                  <div class="mock-filter-chip">
+                    <div class="filter-icon-box"><i class="fa-solid fa-user text-blue"></i></div>
+                    <span class="filter-label">الجهة</span>
+                  </div>
+                  <div class="mock-filter-chip">
+                    <div class="filter-icon-box"><i class="fa-solid fa-coins text-amber"></i></div>
+                    <span class="filter-label">العملة</span>
+                  </div>
+                  <div class="mock-filter-chip">
+                    <div class="filter-icon-box"><i class="fa-solid fa-arrow-right-arrow-left text-blue"></i></div>
+                    <span class="filter-label">نوع العملية</span>
+                  </div>
+                  <div class="mock-filter-chip">
+                    <div class="filter-icon-box"><i class="fa-solid fa-circle-check text-green"></i></div>
+                    <span class="filter-label">الحالة</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 4: لمن إقفال؟ -->
+            <div class="flipper-slide slide-centered card-bg-audience" data-index="4">
+              <div class="slide-content-stack">
+                <span class="slide-category-pill pill-cyan">لمن إقفال؟</span>
+                <h3 class="slide-title">مصمم لمكاتب الصرافة والفرق التي تعتمد على واتساب</h3>
+                <p class="slide-desc">
+                  إقفال مناسب لمكاتب الصرافة والفرق التي تعتمد على واتساب لتبادل عمليات الاستلام والتسليم.
+                </p>
+                <div class="mock-audience-container">
+                  <div class="mock-audience-card">
+                    <div class="mock-aud-icon-box"><i class="fa-solid fa-building-columns text-blue"></i></div>
+                    <span class="mock-aud-title">مكاتب الصرافة</span>
+                  </div>
+                  <div class="mock-audience-card">
+                    <div class="mock-aud-icon-box"><i class="fa-solid fa-users text-blue"></i></div>
+                    <span class="mock-aud-title">الفرق المالية</span>
+                  </div>
+                  <div class="mock-audience-card">
+                    <div class="mock-aud-icon-box"><i class="fa-solid fa-city text-blue"></i></div>
+                    <span class="mock-aud-title">الفرق الميدانية</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 5: الخصوصية -->
+            <div class="flipper-slide slide-split card-bg-privacy" data-index="5">
+              <div class="slide-text-col">
+                <span class="slide-category-pill pill-pink">الخصوصية</span>
+                <h3 class="slide-title">أنت تحدد ما تتم متابعته</h3>
+                <p class="slide-desc">
+                  إقفال يتابع الأرقام التي تحددها فقط، ولا يحتاج إلى متابعة جميع محادثات واتساب، يمكنك تجاهل الرسائل القادمة من الأرقام غير المحددة.
+                </p>
+              </div>
+              <div class="slide-visual-col">
+                <div class="mock-privacy-container">
+                  <div class="mock-privacy-halo">
+                    <div class="mock-privacy-icon-inner">
+                      <i class="fa-solid fa-lock"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Control Bar (Stepper, Navigation & Timer Toggle) -->
+          <div class="flipper-controls-row">
+            <button type="button" class="flipper-btn" id="flipperBtnPrev" aria-label="الشريحة السابقة" title="الشريحة السابقة">
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+
+            <!-- Stepper Dots -->
+            <div class="flipper-stepper-dots">
+              <span class="flipper-dot active" data-slide-index="0" title="1. الكلمات المفتاحية"></span>
+              <span class="flipper-dot" data-slide-index="1" title="2. يحتاج إكمال"></span>
+              <span class="flipper-dot" data-slide-index="2" title="3. التصدير"></span>
+              <span class="flipper-dot" data-slide-index="3" title="4. البحث والفلترة"></span>
+              <span class="flipper-dot" data-slide-index="4" title="5. لمن إقفال؟"></span>
+              <span class="flipper-dot" data-slide-index="5" title="6. الخصوصية"></span>
+            </div>
+
+            <div class="flipper-nav-btns">
+              <button type="button" class="flipper-btn" id="flipperBtnTogglePlay" aria-label="تشغيل / إيقاف التبديل التلقائي" title="إيقاف التبديل التلقائي مؤقتاً">
+                <i class="fa-solid fa-pause"></i>
+              </button>
+              <span class="flipper-counter-text" id="flipperCounterText">01 / 06</span>
+              <button type="button" class="flipper-btn" id="flipperBtnNext" aria-label="الشريحة التالية" title="الشريحة التالية">
+                <i class="fa-solid fa-arrow-left"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+
+    <!-- Pricing & Subscription Plans Section -->
+    <section class="pricing-section" id="pricing">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag"><i class="fa-solid fa-gem"></i> خطط واضحة بدون قيود</span>
+          <h2 class="section-title">استثمر في نمو تجارتك مع باقات <span class="gradient-text">إقفال</span></h2>
+          <p class="section-subtitle">وصول كامل لجميع الأدوات المحاسبية بدون حدود على عدد المحادثات أو القيود، مع تجربة مجانية لمدة 7 أيام.</p>
+        </div>
+
+        <!-- Billing Cycle Switch (Monthly / Yearly) Exactly Like Zemam -->
+        <div class="pricing-cycle-wrapper">
+          <div class="pricing-zemam-toggle" id="pricingZemamToggle">
+            <span class="toggle-label active" id="labelMonthly">شهري</span>
+            <label class="zemam-switch" for="pricingCycleCheckbox" title="التبديل بين شهري وسنوي">
+              <input type="checkbox" id="pricingCycleCheckbox" aria-label="التبديل بين الاشتراك الشهري والسنوي">
+              <span class="zemam-slider"></span>
+            </label>
+            <span class="toggle-label" id="labelYearly">سنوي</span>
+            <span class="save-discount-badge" id="saveDiscountBadge">وفّر 30%</span>
+          </div>
+          <p class="cycle-note" id="cycleBillingNote">فاتورة شهرية مرنة تتجدد كل 30 يوماً — بدون أي التزام</p>
+        </div>
+
+        <!-- Pricing Cards Grid -->
+        <div class="pricing-cards-grid">
+          <!-- Card 1: Free Trial -->
+          <div class="pricing-card free-trial-card">
+            <div class="p-card-header">
+              <div class="p-plan-badge">تجربة مجانية</div>
+              <h3 class="p-plan-name">فترة تجريبية كاملة</h3>
+              <p class="p-plan-desc">استكشف كافة إمكانيات منظومة إقفال وراقب عملياتك المالية بدون أي التزام مالي مسبق.</p>
+            </div>
+
+            <div class="p-card-price">
+              <div class="price-display">
+                <span class="price-curr">د.ل</span>
+                <span class="price-num">0</span>
+              </div>
+              <span class="price-period">صالحة لمدة 7 أيام كاملة</span>
+            </div>
+
+            <ul class="p-features-list">
+              <li><i class="fa-solid fa-check text-green"></i> <span>وصول كامل لكافة مزايا النظام دون أي قيود</span></li>
+              <li><i class="fa-solid fa-check text-green"></i> <span>ربط فوري ومباشر مع رقم واتساب الخاص بك</span></li>
+              <li><i class="fa-solid fa-check text-green"></i> <span>رصد القيود اليومية والسندات المالية آلياً</span></li>
+              <li><i class="fa-solid fa-check text-green"></i> <span>نظام التدقيق وكشف تعديل وحذف الرسائل</span></li>
+              <li><i class="fa-solid fa-check text-green"></i> <span>تصدير كشوف الحساب بصيغة PDF و Excel</span></li>
+              <li><i class="fa-solid fa-check text-green"></i> <span>فترة سماح 3 أيام بعد انتهاء التجربة</span></li>
+            </ul>
+
+            <div class="p-card-action">
+              <a href="https://play.google.com/store/apps/details?id=ly.mostanad.eqfal_app" target="_blank" class="btn btn-outline btn-block">
+                <span>ابدأ تجربتك المجانية (7 أيام)</span>
+                <i class="fa-solid fa-arrow-left"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Card 2: Eqfal Pro -->
+          <div class="pricing-card pro-card popular-card">
+
+            <div class="p-card-header">
+              <div class="p-plan-badge pro-badge">إقفال برو (Pro)</div>
+              <h3 class="p-plan-name">المنظومة الاحترافية الشاملة</h3>
+              <p class="p-plan-desc">الحل المحاسبي الذكي والمتكامل للتجار والشركات لإقفال الحسابات وإدارة المدفوعات عبر واتساب.</p>
+            </div>
+
+            <div class="p-card-price">
+              <div class="price-display">
+                <span class="price-curr">د.ل</span>
+                <span class="price-num" id="proPlanPrice">50</span>
+              </div>
+              <span class="price-period" id="proPlanPeriod">لكل شهر واحد (50 د.ل / شهر)</span>
+            </div>
+
+            <div class="p-saving-banner" id="proSavingBanner" style="display: none;">
+              <i class="fa-solid fa-piggy-bank"></i>
+              <span id="proSavingText">وفر 10% باشتراك ربع سنوي!</span>
+            </div>
+
+            <ul class="p-features-list">
+              <li><i class="fa-solid fa-check-double text-green"></i> <strong>عدد محادثات ورسائل غير محدود إطلاقاً</strong></li>
+              <li><i class="fa-solid fa-check-double text-green"></i> <strong>قيود يومية وسندات قبض وصرف غير محدودة</strong></li>
+              <li><i class="fa-solid fa-check-double text-green"></i> <span>سجل رقابي متقدم وتدقيق فوري ضد تعديل وحذف الرسائل</span></li>
+              <li><i class="fa-solid fa-check-double text-green"></i> <span>كشوف حساب معتمدة بشعار متجرك جاهزة للإرسال والطباعة</span></li>
+              <li><i class="fa-solid fa-check-double text-green"></i> <span>تصدير فوري وتلقائي لجداول الإكسل ودفتر الأستاذ</span></li>
+              <li><i class="fa-solid fa-check-double text-green"></i> <span>بوابة دفع إلكتروني محلية آمنة وموثوقة</span></li>
+              <li><i class="fa-solid fa-check-double text-green"></i> <span>فترة سماح 3 أيام مع إمكانية القراءة وتصدير التقارير دائماً</span></li>
+              <li><i class="fa-solid fa-check-double text-green"></i> <span>دعم فني مباشر وتحديثات برمجية مجانية مستمرة</span></li>
+            </ul>
+
+            <div class="p-card-action">
+              <a href="https://play.google.com/store/apps/details?id=ly.mostanad.eqfal_app" target="_blank" class="btn btn-primary btn-block btn-pro-action">
+                <i class="fa-solid fa-bolt"></i>
+                <span id="proActionText">اشترك الآن في إقفال برو</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+      
+    <!-- FAQ Accordion Section -->
+    <section class="faq-section" id="faq">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag"><i class="fa-solid fa-circle-question"></i> إجابات واضحة</span>
+          <h2 class="section-title">الأسئلة <span class="gradient-text">الشائعة</span></h2>
+          <p class="section-subtitle">كل ما تود معرفته عن طريقة عمل وتأمين منظومة إقفال.</p>
+        </div>
+
+        <div class="faq-accordion">
+          
+            <div class="faq-item">
+            <button class="faq-question" type="button">
+              <span>هل بياناتي وحساباتي المالية آمنة وسرية؟</span>
+              <i class="fa-solid fa-chevron-down faq-chevron"></i>
+            </button>
+            <div class="faq-answer">
+              <p>
+                نعم، بنسبة 100%. بياناتك مخزنة بقواعد بيانات معزولة ومحمية بأعلى معايير التشفير المصرفي. لا يمكن لأي طرف ثالث الاطلاع على سجلاتك المالية، والنظام يتعامل فقط مع الرسائل ذات الطابع المالي التي تحددها أنت.
+              </p>
+            </div>
+          </div>
+
+          
+            <div class="faq-item">
+            <button class="faq-question" type="button">
+              <span>هل يمكنني استخدام المنظومة على أكثر من جهاز في نفس الوقت؟</span>
+              <i class="fa-solid fa-chevron-down faq-chevron"></i>
+            </button>
+            <div class="faq-answer">
+              <p>
+                نعم. يمكنك تشغيل المنظومة من تطبيق الهاتف المحمول للأندرويد، وفي نفس الوقت تسجيل الدخول من خلال المتصفح عبر جهاز الكمبيوتر أو اللابتوب مع مزامنة فورية كاملة لكافة البيانات والعمليات.
+              </p>
+            </div>
+          </div>
+       
+<div class="faq-item">
+            <button class="faq-question" type="button">
+              <span>ماذا يحدث إذا قام الطرف الآخر بتعديل قيمة الحوالة في رسالة واتساب بعد إرسالها؟</span>
+              <i class="fa-solid fa-chevron-down faq-chevron"></i>
+            </button>
+            <div class="faq-answer">
+              <p>
+                هذه نقطة القوة الرئيسية في «إقفال». فور قيام الطرف الآخر بتعديل الرسالة، يلتقط محرك التدقيق الحدث، ويوثق المبلغ القديم والمبلغ الجديد، ويضع علامة تنبيه واضحة في كشف الحساب وسجل العمليات، مما يمنع أي احتيال أو تلاعب مالي نهائياً.
+              </p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" type="button">
+              <span>هل يمكنني تصدير كشوفات الحساب وطباعتها؟</span>
+              <i class="fa-solid fa-chevron-down faq-chevron"></i>
+            </button>
+            <div class="faq-answer">
+              <p>
+                بالتأكيد. يمكنك بنقرة زر واحدة تصدير كشف حساب أي عميل أو مورد بصيغة PDF أنيقة وجاهزة للطباعة أو الإرسال مباشرة عبر واتساب، كما تتوفر إمكانية تصدير البيانات إلى جداول Excel لإجراء تحليلات إضافية.
+              </p>
+            </div>
+          </div>
+
+        
+
+           <div class="faq-item">
+            <button class="faq-question" type="button">
+              <span>هل أحتاج إلى رقم واتساب تجاري رسمي (API) أم يمكنني استخدام رقمي العادي؟</span>
+              <i class="fa-solid fa-chevron-down faq-chevron"></i>
+            </button>
+            <div class="faq-answer">
+              <p>
+                يمكنك استخدام رقمك العادي أو رقم واتساب للأعمال (WhatsApp Business) دون أي حاجة للاشتراك في خدمات الـ API المعقدة أو المكلفة. كل ما عليك هو مسح كود QR أو إدخال كود الاقتران كأنك تفتح واتساب ويب!
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Final Call To Action (CTA) Section -->
+    <section class="cta-section">
+      <div class="container">
+        <div class="cta-card">
+          <div class="cta-glow"></div>
+          <div class="cta-logo-wrap">
+            <img src="assets/app_icon.png" alt="شعار إقفال" class="cta-app-icon">
+          </div>
+          <h2 class="cta-title">جاهز لتحويل تجارتك وإقفال حساباتك بدقة واحتراف؟</h2>
+          <p class="cta-desc">
+            انضم الآن إلى التجار ورواد الأعمال الذين وفروا ساعات من الجهد اليومي وحموا أموالهم مع منظومة «إقفال». ابدأ اليوم مجاناً!
+          </p>
+
+          <div class="cta-buttons">
+            <a href="https://play.google.com/store/apps/details?id=ly.mostanad.eqfal_app" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-xl">
+              <i class="fa-brands fa-google-play fa-xl"></i>
+              <span>تحميل التطبيق للأندرويد</span>
+            </a>
+            <button type="button" class="btn btn-support btn-xl" id="btnOpenSupportModal">
+              <i class="fa-solid fa-headset fa-xl"></i>
+              <span>الدعم الفني والمساعدة</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div class="footer-col footer-brand">
+        <div class="brand-logo" style="margin-bottom: 1.25rem;">
+          <img src="assets/logo_white.png" alt="منظومة إقفال" class="footer-logo-img" style="height: 44px; width: auto; object-fit: contain;">
+        </div>
+        <p class="footer-about">
+          المنظومة الأولى المتخصصة في أتمتة القيود المالية من محادثات واتساب، حماية الأرصدة، والمطابقة اليومية الفورية للشركات والمتاجر في ليبيا والوطن العربي.
+        </p>
+        <div class="social-links">
+          <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+          <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a href="mailto:support@mostanad.ly" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-title">روابط سريعة</h4>
+        <ul class="footer-list">
+          <li><a href="#how-it-works">كيف يعمل إقفال؟</a></li>
+          <li><a href="#dashboard">لوحة العمليات</a></li>
+          <li><a href="#smart-features">حلول ومميزات إقفال</a></li>
+          <li><a href="#comparison">مقارنة المنظومة</a></li>
+          <li><a href="#simulator">المحاكي التفاعلي</a></li>
+          <li><a href="#pricing">خطط الأسعار والاشتراك</a></li>
+          <li><a href="#faq">الأسئلة الشائعة</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-title">الوصول للمنصات</h4>
+        <ul class="footer-list">
+          <li><a href="https://play.google.com/store/apps/details?id=ly.mostanad.eqfal_app" target="_blank">تطبيق أندرويد (Google Play)</a></li>
+          <li><a href="https://eqfall.mostanad.ly/privacy" target="_blank">سياسة الخصوصية</a></li>
+          <li><a href="https://eqfall.mostanad.ly/terms" target="_blank">شروط الخدمة والاتفاقية</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 class="footer-title">تطوير ودعم</h4>
+        <p class="company-tagline">
+          تم التطوير والتشغيل بواسطة:
+        </p>
+        <div class="developer-box">
+          <i class="fa-solid fa-shield-halved dev-icon"></i>
+          <div>
+            <strong>شركة مستند للحلول البرمجية</strong>
+            <small>Mostanad Software Solutions Ltd</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="container bottom-container">
+        <p>© 2026 جميع الحقوق محفوظة لمنظومة إقفال - شركة مستند للحلول البرمجية والذكاء الاصطناعي.</p>
+        <div class="bottom-badges">
+          <span class="secure-badge"><i class="fa-solid fa-lock"></i> اتصال مشفر 256-bit SSL</span>
+          <span class="version-badge">إصدار v1.0.11</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Support Ticket Modal (Exact App Match) -->
+  <div class="support-modal-backdrop" id="supportModal" aria-hidden="true">
+    <div class="support-modal-dialog">
+      <button type="button" class="modal-close-btn" id="btnCloseSupportModal" aria-label="إغلاق">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <!-- Form View -->
+      <div class="support-modal-content" id="supportFormView">
+        <div class="modal-header-section">
+          <div class="modal-icon-badge">
+            <i class="fa-solid fa-headset"></i>
+          </div>
+          <div class="modal-header-text">
+            <h3 class="modal-title">الدعم الفني والمساعدة</h3>
+            <p class="modal-subtitle">أرسل تفاصيل طلبك وسيقوم فريقنا بالتواصل معك فوراً.</p>
+          </div>
+        </div>
+
+        <form id="supportTicketForm" class="support-form" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="ticketFullName">الاسم بالكامل <span class="required">*</span></label>
+            <div class="input-with-icon">
+              <i class="fa-regular fa-user input-icon"></i>
+              <input type="text" id="ticketFullName" class="form-input" placeholder="أدخل اسمك الكريم" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="ticketPhone">رقم الهاتف للتواصل <span class="required">*</span></label>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-phone input-icon"></i>
+              <input type="tel" id="ticketPhone" class="form-input text-ltr" placeholder="09XXXXXXXX" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="ticketSubject">نوع الطلب / الموضوع</label>
+            <div class="input-with-icon">
+              <i class="fa-solid fa-tag input-icon"></i>
+              <select id="ticketSubject" class="form-input form-select">
+                <option value="طلب تفعيل واشتراك جديد" selected>طلب تفعيل واشتراك جديد</option>
+                <option value="مساعدة فنية وحل مشكلة">مساعدة فنية وحل مشكلة</option>
+                <option value="استفسار عن الأسعار والباقات">استفسار عن الأسعار والباقات</option>
+                <option value="طلب تجربة أو عرض توضيحي">طلب تجربة أو عرض توضيحي</option>
+                <option value="أخرى">أخرى</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="ticketEmail">البريد الإلكتروني <small class="optional">(اختياري)</small></label>
+            <div class="input-with-icon">
+              <i class="fa-regular fa-envelope input-icon"></i>
+              <input type="email" id="ticketEmail" class="form-input text-ltr" placeholder="example@domain.com">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="ticketMessage">تفاصيل الطلب أو المشكلة <span class="required">*</span></label>
+            <textarea id="ticketMessage" class="form-input form-textarea" rows="4" placeholder="اشرح طلبك بالتفصيل لمساعدتك بأفضل وأسرع شكل..." required></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-submit-ticket" id="btnSubmitTicket">
+              <i class="fa-solid fa-paper-plane"></i>
+              <span>إرسال طلب الدعم</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Success View -->
+      <div class="support-modal-content support-success-view" id="supportSuccessView" style="display: none;">
+        <div class="success-icon-circle">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <h3 class="success-title">تم استلام طلبك بنجاح!</h3>
+        <div class="ticket-id-badge">
+          <span>رقم التذكرة:</span>
+          <strong id="assignedTicketId">#1052</strong>
+        </div>
+        <p class="success-desc">
+          تم تسجيل تذكرتك بنجاح في المنظومة، وسيقوم فريق الدعم الفني بالاتصال بك عبر رقم الهاتف أو البريد الإلكتروني لمساعدتك وحل المشكلة في أقرب وقت.
+        </p>
+
+        <button type="button" class="btn btn-glass btn-block" id="btnDoneSupportModal">
+          حسناً، إغلاق
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

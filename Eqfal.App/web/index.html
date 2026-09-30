@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="إقفال - حول رسائلك إلى عمليات">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="إقفال">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>إقفال | منصة إدارة ومتابعة العمليات</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0F172A;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
+    #eqfal-splash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #0F172A;
+      z-index: 999999;
+      transition: opacity 0.4s ease-out;
+    }
+    .splash-logo {
+      width: 130px;
+      height: auto;
+      margin-bottom: 24px;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    .splash-loader {
+      width: 160px;
+      height: 4px;
+      background-color: #1E293B;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .splash-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 40%;
+      background: linear-gradient(90deg, #2563EB, #3B82F6);
+      border-radius: 4px;
+      animation: loading 1.5s ease-in-out infinite;
+    }
+    .splash-text {
+      margin-top: 16px;
+      color: #94A3B8;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.03); opacity: 0.88; }
+    }
+    @keyframes loading {
+      0% { left: -40%; width: 30%; }
+      50% { left: 40%; width: 50%; }
+      100% { left: 100%; width: 30%; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Instant Branded Splash Screen -->
+  <div id="eqfal-splash">
+    <img class="splash-logo" src="assets/images/eqfal-logo.png" alt="إقفال" onerror="this.style.display='none'">
+    <div class="splash-loader">
+      <div class="splash-bar"></div>
+    </div>
+    <div class="splash-text">جاري تحميل النظام...</div>
+  </div>
+
+  <script>
+    function removeSplash() {
+      var splash = document.getElementById('eqfal-splash');
+      if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(function () {
+          if (splash && splash.parentNode) {
+            splash.parentNode.removeChild(splash);
+          }
+        }, 400);
+      }
+    }
+    window.addEventListener('flutter-first-frame', removeSplash);
+    // Safari fallback: ensure splash doesn't block if event is dropped
+    setTimeout(removeSplash, 6000);
+  </script>
+
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
