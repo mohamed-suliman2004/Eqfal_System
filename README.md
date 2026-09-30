@@ -139,7 +139,7 @@ npm start
 
 ## 👨‍💻 المطور (Author & Contact)
 
-- **الاسم**: Mohamed Suliman
+- **اسم المطور**: محمد سليمان علي (Mohamed Suliman Ali)
 - **GitHub**: [@mohamed-suliman2004](https://github.com/mohamed-suliman2004)
 - **المشروع**: منظومة إقفال (Eqfal Financial Accounting System)
-- **الشركة المطورة**: شركة المستند للحلول التقنية والذكاء الاصطناعي (Mostanad Tech)
+- **الشركة**: شركة المستند (Mostanad)
