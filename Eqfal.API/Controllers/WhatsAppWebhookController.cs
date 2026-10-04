@@ -477,6 +477,14 @@ namespace Eqfal.API.Controllers
             if (string.IsNullOrWhiteSpace(rawText))
                 return Ok();
 
+            // Privacy & Disconnection check: if user unlinked/disconnected WhatsApp, immediately drop all messages
+            var activeSession = await _context.WhatsAppSessions.AsNoTracking().FirstOrDefaultAsync(s => s.UserId == userId);
+            if (activeSession == null || activeSession.Status != "متصل")
+            {
+                _logger.LogInformation("[Webhook Dropped] User {UserId} WhatsApp is disconnected ({Status}). Dropping message.", userId, activeSession?.Status ?? "None");
+                return Ok(new { status = "Ignored", reason = "User session is disconnected" });
+            }
+
             string text = rawText.Trim();
             text = text.Replace('\u0660', '0').Replace('\u0661', '1').Replace('\u0662', '2')
                        .Replace('\u0663', '3').Replace('\u0664', '4').Replace('\u0665', '5')
@@ -754,7 +762,6 @@ namespace Eqfal.API.Controllers
             };
 
             _context.Operations.Add(newOp);
-            AuditLogger.Log(userId, "TRANSACTION_DETECTED", $"استخراج عملية مالية: {analysisResult.Amount} {analysisResult.Currency} ({analysisResult.Category}) من: {finalSender}", "WhatsApp");
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("[Operation Saved] ID: {Id}, Amount: {Amount}, Currency: {Currency}, Category: {Category}, Party: {Party}",
@@ -1367,7 +1374,7 @@ namespace Eqfal.API.Controllers
                             }
                             else
                             {
-                                AuditLogger.Log(userId, "SECRET_EDIT_FAILED", $"TargetId: {se.TargetMessageId} | RemoteJid: {se.RemoteJid}", "WhatsApp");
+                                _logger.LogInformation("Secret edit target: {TargetMessageId}", se.TargetMessageId);
                             }
                         }
                     }
@@ -2100,8 +2107,6 @@ namespace Eqfal.API.Controllers
                 if (categoryChanged) auditDetails += $" [التصنيف: {oldCategory} -> {category}]";
                 auditDetails += $" | النص: {cleanText}";
 
-                AuditLogger.Log(userId, "TRANSACTION_EDITED", auditDetails, "WhatsApp");
-
                 try
                 {
                     await _hubContext.Clients.Group($"user_{userId}").SendAsync("ReceiveNewOperation", operation);
@@ -2199,7 +2204,6 @@ namespace Eqfal.API.Controllers
                     }
 
                     await _context.SaveChangesAsync();
-                    AuditLogger.Log(userId, "TRANSACTION_REVOKED", $"تم حذف رسالة العملية #{operation.Id} من الواتساب بقيمة {operation.Amount} {operation.Currency}", "WhatsApp");
 
                     try
                     {

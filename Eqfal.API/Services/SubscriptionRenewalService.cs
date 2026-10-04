@@ -186,6 +186,7 @@ namespace Eqfal.API.Services
             }
 
             await _context.SaveChangesAsync();
+            AuditLogger.Log(payment.UserId, "PAYMENT_SUCCESS", $"سداد اشتراك ناجح: {price.Plan.NameAr} ({price.BillingCycle}) بقيمة {payment.Amount} د.ل", "EzonePay");
             _logger.LogInformation("[RenewalService] Successfully settled payment {Id} and renewed subscription for user {UserId}", paymentId, payment.UserId);
 
             // بث الأحداث اللحظية عبر SignalR
@@ -363,6 +364,7 @@ namespace Eqfal.API.Services
             }
 
             await _context.SaveChangesAsync();
+            AuditLogger.Log(userId, "SUBSCRIPTION_EXTENDED", $"تمديد يدوي لاشتراك المستخدم: {user.FullName} بمقدار {days} يوم", "Admin");
             return sub;
         }
     }

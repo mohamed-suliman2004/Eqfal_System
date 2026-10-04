@@ -165,8 +165,6 @@ namespace Eqfal.API.Controllers
                 operation.UserId = userId;
                 operation.CreatedAt = DateTime.UtcNow;
                 _context.Operations.Add(operation);
-                var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
-                AuditLogger.Log(userId, "OPERATION_CREATED", $"إضافة عملية مالية يدوياً: {operation.Amount} {operation.Currency} ({operation.Category})", clientIp);
                 await _context.SaveChangesAsync();
 
                 // بث فوري للمستخدم فقط
@@ -216,9 +214,6 @@ namespace Eqfal.API.Controllers
                 if (!string.IsNullOrWhiteSpace(updateDto.Status)) existingOp.Status = updateDto.Status;
                 existingOp.IsReviewed = updateDto.IsReviewed;
                 existingOp.UpdatedAt = DateTime.UtcNow;
-
-                var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
-                AuditLogger.Log(userId, "OPERATION_UPDATED", $"تعديل بيانات العملية المالية #{id}", clientIp);
                 await _context.SaveChangesAsync();
 
                 // بث فوري للمستخدم فقط
@@ -257,8 +252,6 @@ namespace Eqfal.API.Controllers
                 }
 
                 _context.Operations.Remove(operation);
-                var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
-                AuditLogger.Log(userId, "OPERATION_DELETED", $"حذف العملية المالية #{id}", clientIp);
                 await _context.SaveChangesAsync();
 
                 // بث فوري للمستخدم فقط
@@ -313,8 +306,6 @@ namespace Eqfal.API.Controllers
                 var deletedIds = operations.Select(o => o.Id).ToList();
 
                 _context.Operations.RemoveRange(operations);
-                var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
-                AuditLogger.Log(userId, "OPERATIONS_BATCH_DELETED", $"حذف جماعي لـ {deletedCount} عملية مالية", clientIp);
                 await _context.SaveChangesAsync();
 
                 try
@@ -353,16 +344,6 @@ namespace Eqfal.API.Controllers
 
                 operation.Status = "معتمد";
                 operation.UpdatedAt = DateTime.UtcNow;
-                if (!string.IsNullOrEmpty(operation.Notes))
-                {
-                    operation.Notes = operation.Notes
-                        .Replace(" | ⚠️ تم حذف الرسالة الأصلية من الواتساب", "")
-                        .Replace("⚠️ تم حذف الرسالة الأصلية من الواتساب (Delete for everyone)", "")
-                        .Trim();
-                }
-                
-                var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
-                AuditLogger.Log(userId, "OPERATION_RESTORED", $"استعادة العملية المالية #{id} بعد حذفها من الواتساب", clientIp);
                 await _context.SaveChangesAsync();
 
                 try
