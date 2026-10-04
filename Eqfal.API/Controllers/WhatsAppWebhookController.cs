@@ -636,7 +636,6 @@ namespace Eqfal.API.Controllers
                 try { await _hubContext.Clients.User(targetUserId.ToString()).SendAsync("MonitoredNumbersChanged"); } catch { }
                 try { await _hubContext.Clients.Group($"user_{targetUserId}").SendAsync("MonitoredNumbersChanged"); } catch { }
 
-                AuditLogger.Log(targetUserId, isActivating ? "MONITORING_ENABLED" : "MONITORING_DISABLED", $"تحديث حالة المراقبة ({(isActivating ? "تفعيل" : "تعطيل")}) للمحادثة: {phoneToSave} ({defaultName})", "WhatsApp");
                 return Ok(new { status = "Command processed", phone = phoneToSave, name = defaultName, activating = isActivating });
             }
             

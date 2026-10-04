@@ -262,9 +262,6 @@ namespace Eqfal.API.Controllers
                     } 
                     catch { }
 
-                    var clientIpE = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
-                    AuditLogger.Log(userId, "MONITORED_NUMBER_UPDATED", $"تفعيل مراقبة الرقم: {existing.PhoneNumber} ({existing.ContactName})", clientIpE);
-
                     return Ok(new {
                         id = existing.Id,
                         phoneNumber = existing.PhoneNumber,
@@ -291,9 +288,6 @@ namespace Eqfal.API.Controllers
                     await _hubContext.Clients.Group($"user_{userId}").SendAsync("MonitoredNumbersChanged");
                 } 
                 catch { }
-
-                var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
-                AuditLogger.Log(userId, "MONITORED_NUMBER_ADDED", $"إضافة رقم مراقب: {newNumber.PhoneNumber} ({newNumber.ContactName})", clientIp);
 
                 return Ok(new {
                     id = newNumber.Id,
@@ -337,10 +331,6 @@ namespace Eqfal.API.Controllers
                     await _hubContext.Clients.Group($"user_{userId}").SendAsync("MonitoredNumbersChanged");
                 } 
                 catch { }
-
-                var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
-                string actionText = number.IsActive ? "تفعيل" : "إيقاف";
-                AuditLogger.Log(userId, "MONITORED_NUMBER_TOGGLED", $"{actionText} مراقبة الرقم: {number.PhoneNumber} ({number.ContactName})", clientIp);
 
                 return Ok(new {
                     id = number.Id,
@@ -391,9 +381,6 @@ namespace Eqfal.API.Controllers
                 } 
                 catch { }
 
-                var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
-                AuditLogger.Log(userId, "MONITORED_NUMBER_UPDATED", $"تعديل بيانات الرقم: {number.PhoneNumber} ({number.ContactName})", clientIp);
-
                 return Ok(new {
                     id = number.Id,
                     phoneNumber = number.PhoneNumber,
@@ -430,9 +417,6 @@ namespace Eqfal.API.Controllers
                     await _hubContext.Clients.Group($"user_{userId}").SendAsync("MonitoredNumbersChanged");
                 } 
                 catch { }
-
-                var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
-                AuditLogger.Log(userId, "MONITORED_NUMBER_DELETED", $"حذف الرقم المراقب: {number.PhoneNumber}", clientIp);
 
                 return Ok(new { message = "تم حذف الرقم بنجاح" });
             }
