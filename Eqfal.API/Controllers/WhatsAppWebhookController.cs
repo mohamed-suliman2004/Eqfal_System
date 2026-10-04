@@ -207,13 +207,6 @@ namespace Eqfal.API.Controllers
 
                 _logger.LogInformation("[Evolution Webhook] Event: {Event}, Instance: {Instance}, UserId: {UserId}", eventName, instanceName, userId);
 
-                if (!eventName.Contains("connection", StringComparison.OrdinalIgnoreCase))
-                {
-                    string snippet = root.GetRawText();
-                    if (snippet.Length > 250) snippet = snippet[..250];
-                    AuditLogger.Log(userId, "EVOLUTION_EVENT", $"Event: {eventName} | Snippet: {snippet}", "WhatsApp");
-                }
-
                 // Auto-sync webhook configuration for active instance in background
                 if (!string.IsNullOrEmpty(instanceName))
                 {
