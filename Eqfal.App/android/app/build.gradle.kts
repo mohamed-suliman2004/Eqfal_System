@@ -35,8 +35,8 @@ android {
         applicationId = "ly.mostanad.eqfal_app"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
-        versionCode = 12
-        versionName = "1.0.12"
+        versionCode = 13
+        versionName = "1.0.13"
     }
 
     buildTypes {
