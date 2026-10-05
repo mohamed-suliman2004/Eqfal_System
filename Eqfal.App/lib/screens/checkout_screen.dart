@@ -89,6 +89,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   }
 
   void _startPayment() async {
+    final typedCode = _codeController.text.trim();
+    final codeToSend = _discountResult?.code ?? (typedCode.isNotEmpty ? typedCode : null);
+
     setState(() {
       _isProcessingPayment = true;
     });
@@ -96,7 +99,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     try {
       final res = await _subService.checkout(
         planPriceId: widget.price.id,
-        discountCode: _discountResult?.code,
+        discountCode: codeToSend,
         confirmReplaceActivePlan: widget.confirmReplace,
       );
 
@@ -115,7 +118,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         _activePaymentId = paymentId;
         final uri = Uri.parse(paymentUrl);
         if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
         }
 
         // بدء استعلام الحالة التلقائي (Polling) كل 4 ثوانٍ
@@ -480,32 +483,37 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
             const SizedBox(height: 28),
 
-            // زر الدفع الكبير
+            // زر الدفع أو التفعيل المجاني الكبير
             ElevatedButton(
               onPressed: _isProcessingPayment ? null : _startPayment,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0284C7),
+                backgroundColor: finalPrice <= 0 ? const Color(0xFF10B981) : const Color(0xFF0284C7),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 elevation: 1,
               ),
               child: _isProcessingPayment
-                  ? const Row(
+                  ? Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
-                        SizedBox(width: 12),
-                        Text('جارٍ الاتصال ببوابة EzonePay...', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                        const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
+                        const SizedBox(width: 12),
+                        Text(
+                          finalPrice <= 0 ? 'جارٍ تفعيل الاشتراك مجاناً...' : 'جارٍ الاتصال ببوابة EzonePay...',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                        ),
                       ],
                     )
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.payment, size: 22),
+                        Icon(finalPrice <= 0 ? Icons.card_giftcard : Icons.payment, size: 22),
                         const SizedBox(width: 8),
                         Text(
-                          'الدفع الآن عبر EzonePay (${finalPrice.toStringAsFixed(finalPrice.truncateToDouble() == finalPrice ? 0 : 2)} د.ل)',
+                          finalPrice <= 0
+                              ? 'تفعيل الاشتراك مجاناً (خصم 100%)'
+                              : 'الدفع الآن عبر EzonePay (${finalPrice.toStringAsFixed(finalPrice.truncateToDouble() == finalPrice ? 0 : 2)} د.ل)',
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ],
@@ -513,16 +521,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
 
             const SizedBox(height: 16),
-            const Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.lock, size: 14, color: Color(0xFF94A3B8)),
-                  SizedBox(width: 4),
-                  Text('دفع إلكتروني آمن ومحمي 100% عبر EzonePay', style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
-                ],
+            if (finalPrice > 0)
+              const Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.lock, size: 14, color: Color(0xFF94A3B8)),
+                    SizedBox(width: 4),
+                    Text('دفع إلكتروني آمن ومحمي 100% عبر EzonePay', style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+                  ],
+                ),
               ),
-            ),
           ],
         ),
       ),
