@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 
 namespace Eqfal.API.Services
 {
@@ -16,6 +16,7 @@ namespace Eqfal.API.Services
         /// When true, the controller must NOT override it based on message direction.
         /// </summary>
         public bool CategoryFromKeyword { get; set; } = false;
+        public bool IsConflicted { get; set; } = false;
     }
 
     public interface IMessageAnalysisService

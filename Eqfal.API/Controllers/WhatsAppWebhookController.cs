@@ -738,7 +738,9 @@ namespace Eqfal.API.Controllers
                 return Ok(new { status = "Ignored", reason = "No financial transaction detected" });
             }
 
-            string category = !string.IsNullOrWhiteSpace(analysisResult.Category) ? analysisResult.Category : (isFromMe ? "تسليم" : "استلام");
+            string category = !string.IsNullOrWhiteSpace(analysisResult.Category) 
+                ? analysisResult.Category 
+                : (analysisResult.IsConflicted || analysisResult.Status == "مسودة" ? "" : (isFromMe ? "تسليم" : "استلام"));
 
             string party = !string.IsNullOrWhiteSpace(analysisResult.Party) ? analysisResult.Party : "";
 
@@ -753,7 +755,7 @@ namespace Eqfal.API.Controllers
                 Currency = analysisResult.Currency ?? "",
                 Party = party,
                 Notes = analysisResult.Notes,
-                Status = analysisResult.Status ?? "\u0645\u0633\u0648\u062f\u0629",
+                Status = analysisResult.IsConflicted ? "مسودة" : (analysisResult.Status ?? "مسودة"),
                 RawMessage = !string.IsNullOrEmpty(payload.MessageId) ? $"[MSG_ID:{payload.MessageId}]\n{text}" : text,
                 IsReviewed = false,
                 IsOutgoing = isFromMe,

@@ -60,10 +60,17 @@ namespace Eqfal.API.Services
 
             // 2. Extract Category
             bool categoryFromKeyword = false;
-            string? category = ExtractCategoryByUserKeywords(textWithoutUrls, userKeywords, isOutgoing, out categoryFromKeyword);
+            bool isConflicted = false;
+            string? category = ExtractCategoryByUserKeywords(textWithoutUrls, userKeywords, isOutgoing, out categoryFromKeyword, out isConflicted);
 
             bool hasExplicitCategory = false;
-            if (string.IsNullOrEmpty(category))
+            if (isConflicted)
+            {
+                // Strict rule: if keyword exists in both receipt and delivery, force Category to empty and Status to draft
+                category = "";
+                hasExplicitCategory = false;
+            }
+            else if (string.IsNullOrEmpty(category))
             {
                 category = ExtractExplicitCategory(textWithoutUrls, isOutgoing);
                 if (!string.IsNullOrEmpty(category))
@@ -125,8 +132,8 @@ namespace Eqfal.API.Services
                 return NonFinancialResult(textWithoutUrls);
             }
 
-            // If category wasn't explicit, infer from outgoing/incoming
-            if (string.IsNullOrEmpty(category))
+            // If category wasn't explicit and not conflicted, infer from outgoing/incoming
+            if (string.IsNullOrEmpty(category) && !isConflicted)
             {
                 category = isOutgoing ? "تسليم" : "استلام";
             }
@@ -136,14 +143,14 @@ namespace Eqfal.API.Services
             // But for "complete" status, only count the party if it was extracted from the message text itself,
             // NOT from the default party fallback (contact name / phone number).
             bool hasParty = !string.IsNullOrWhiteSpace(party);
-            bool isComplete = hasValidAmount && hasExplicitCurrency && hasExplicitCategory && partyExtractedFromText;
+            bool isComplete = !isConflicted && hasValidAmount && hasExplicitCurrency && hasExplicitCategory && partyExtractedFromText;
             string status = isComplete ? "مكتمل" : "مسودة";
 
             // ═══════════════════════════════════════════════════════════════
             // HYBRID AI FALLBACK: If regex returned "مسودة" (incomplete),
-            // call Gemini AI to fill in the missing fields.
+            // call Gemini AI to fill in the missing fields (unless conflicted by user keywords).
             // ═══════════════════════════════════════════════════════════════
-            if (status == "مسودة" && isFinancial)
+            if (status == "مسودة" && isFinancial && !isConflicted)
             {
                 try
                 {
@@ -202,15 +209,23 @@ namespace Eqfal.API.Services
             _logger.LogInformation("[Analysis Result] User={UserId}, IsOutgoing={IsOutgoing}, Amount={Amount}, Currency={Currency}, Category={Category}, Party={Party}, Status={Status}",
                 userId, isOutgoing, amount, currency, category, party, status);
 
+            string finalNotes = textWithoutUrls.Length > 300 ? textWithoutUrls.Substring(0, 300) : textWithoutUrls;
+            if (isConflicted)
+            {
+                finalNotes = "⚠️ تعارض في الكلمات المفتاحية (الكلمة مضافة في الاستلام والتسليم معاً) — بانتظار تحديدك للتصنيف\n" + finalNotes;
+                if (finalNotes.Length > 350) finalNotes = finalNotes.Substring(0, 350);
+            }
+
             return new MessageAnalysisResult
             {
                 Amount = amount,
                 Currency = currency,
-                Category = category,
+                Category = category ?? "",
                 Party = party ?? "",
-                Notes = textWithoutUrls.Length > 300 ? textWithoutUrls.Substring(0, 300) : textWithoutUrls,
+                Notes = finalNotes,
                 Status = status,
-                CategoryFromKeyword = categoryFromKeyword
+                CategoryFromKeyword = categoryFromKeyword,
+                IsConflicted = isConflicted
             };
         }
 
@@ -423,17 +438,21 @@ namespace Eqfal.API.Services
             return null;
         }
 
-        private string? ExtractCategoryByUserKeywords(string text, List<DynamicKeyword> keywords, bool isOutgoing, out bool fromKeyword)
+        private string? ExtractCategoryByUserKeywords(string text, List<DynamicKeyword> keywords, bool isOutgoing, out bool fromKeyword, out bool isConflicted)
         {
             fromKeyword = false;
+            isConflicted = false;
             if (keywords == null || !keywords.Any()) return null;
 
             // Only keywords for financial transaction types can be categories.
-            // Currencies (USD, EUR, LYD, etc.) must NEVER be returned as categories.
             var validCategoryTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "استلام", "تسليم", "إيداع", "ايداع", "سحب", "صرف", "قبض", "دفع", "تحويل", "شحن"
             };
+
+            bool matchesReceipt = false;
+            bool matchesDelivery = false;
+            string? firstMatch = null;
 
             foreach (var kw in keywords.Where(k => !string.IsNullOrWhiteSpace(k.Type) && validCategoryTypes.Contains(k.Type.Trim())))
             {
@@ -445,27 +464,33 @@ namespace Eqfal.API.Services
                 {
                     fromKeyword = true;
                     string type = kw.Type.Trim();
-                    
-                    if (type == "صرف" || type == "دفع" || type == "تحويل" || type == "تسليم")
+                    string resolved = type;
+
+                    if (type == "صرف" || type == "دفع" || type == "تحويل" || type == "تسليم" || type == "إيداع" || type == "ايداع")
                     {
-                        return isOutgoing ? "تسليم" : "استلام";
+                        resolved = isOutgoing ? "تسليم" : "استلام";
                     }
-                    if (type == "قبض" || type == "شحن" || type == "استلام")
+                    else if (type == "قبض" || type == "شحن" || type == "استلام" || type == "سحب")
                     {
-                        return isOutgoing ? "استلام" : "تسليم";
+                        resolved = isOutgoing ? "استلام" : "تسليم";
                     }
-                    if (type == "إيداع" || type == "ايداع")
-                    {
-                        return isOutgoing ? "تسليم" : "استلام";
-                    }
-                    if (type == "سحب")
-                    {
-                        return isOutgoing ? "استلام" : "تسليم";
-                    }
-                    return type;
+
+                    if (resolved == "استلام") matchesReceipt = true;
+                    if (resolved == "تسليم") matchesDelivery = true;
+
+                    firstMatch ??= resolved;
                 }
             }
-            return null;
+
+            // إذا كانت الكلمة مضافة في الاستلام والتسليم معاً، يعتبر تعارض ولا يتم التخمين بل تحويل الرسالة إلى مسودة
+            if (matchesReceipt && matchesDelivery)
+            {
+                isConflicted = true;
+                _logger.LogInformation("[Keyword Conflict] Matched both Receipt and Delivery keywords in text: {Text}. Setting as Conflicted Draft.", text);
+                return null;
+            }
+
+            return firstMatch;
         }
 
         private static string? ExtractExplicitCategory(string text, bool isOutgoing)
