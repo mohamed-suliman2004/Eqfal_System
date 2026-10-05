@@ -650,7 +650,7 @@ namespace Eqfal.API.Services
             if (companyMatch.Success)
             {
                 string companyType = companyMatch.Groups[1].Value.Trim();
-                string companyName = CleanPartyName(companyMatch.Groups[2].Value);
+                string companyName = CleanPartyName(companyMatch.Groups[2].Value, keywords);
                 if (!string.IsNullOrWhiteSpace(companyName) && IsValidPartyName(companyName))
                 {
                     return $"{companyType} {companyName}".Trim();
@@ -661,7 +661,7 @@ namespace Eqfal.API.Services
             var roleMatch = Regex.Match(text, @"(?:\b|^)(?:الطرف|المستلم|المستفيد|العميل|الزبون|باسم|بإسم|لصالح|حساب|طرف)\s*[:=-]?\s*([^\d\r\n,.!?/\\:;#]+)", RegexOptions.IgnoreCase);
             if (roleMatch.Success)
             {
-                string party = CleanPartyName(roleMatch.Groups[1].Value);
+                string party = CleanPartyName(roleMatch.Groups[1].Value, keywords);
                 if (!string.IsNullOrWhiteSpace(party) && IsValidPartyName(party)) return party;
             }
 
@@ -669,7 +669,7 @@ namespace Eqfal.API.Services
             var prepMatch = Regex.Match(text, @"(?:أرجو\s+تسليم|ارجو\s+تسليم|أرجو\s+استلام|ارجو\s+استلام|الرجاء\s+تسليم|الرجاء\s+استلام|ياريت\s+تسلم|ياريت\s+تسلملي|ياريت\s+تسليم|ياريت\s+استلام|ممكن\s+تسلم|ممكن\s+تسلملي|لو\s*سمحت\s+تسلم|لو\s*سمحت\s+سلم|تسليم\s+لـ|تسليم\s+إلى|تسليم\s+الى|تسليم|استلام\s+من|استلام|استلم\s+من|استلم|إيداع\s+في\s+حساب|إيداع\s+لـ|إيداع|ايداع|سحب\s+من|سحب|سلم\s+لـ|سلم|تسلم|من|إلى|الى|لـ|عن\s+طريق)\s+([^\d\r\n,.!?/\\:;#]+)", RegexOptions.IgnoreCase);
             if (prepMatch.Success)
             {
-                string party = CleanPartyName(prepMatch.Groups[1].Value);
+                string party = CleanPartyName(prepMatch.Groups[1].Value, keywords);
                 if (!string.IsNullOrWhiteSpace(party) && IsValidPartyName(party)) return party;
             }
 
@@ -677,7 +677,7 @@ namespace Eqfal.API.Services
             var startNameMatch = Regex.Match(text, @"^([^\d\r\n,.!?_+=*/\\;:'""`~]{2,30})\s+(?:\d{1,3}(?:[,\s]\d{3})*(?:\.\d+)?|\d+)", RegexOptions.IgnoreCase);
             if (startNameMatch.Success)
             {
-                string party = CleanPartyName(startNameMatch.Groups[1].Value);
+                string party = CleanPartyName(startNameMatch.Groups[1].Value, keywords);
                 if (!string.IsNullOrWhiteSpace(party) && IsValidPartyName(party)) return party;
             }
 
@@ -685,21 +685,34 @@ namespace Eqfal.API.Services
             var suffixMatch = Regex.Match(text, @"(?:\d+|دينار|دولار|يورو|ليرة|LYD|USD|EUR)\s+([\p{L}\s]{2,30})$", RegexOptions.IgnoreCase);
             if (suffixMatch.Success)
             {
-                string party = CleanPartyName(suffixMatch.Groups[1].Value);
+                string party = CleanPartyName(suffixMatch.Groups[1].Value, keywords);
                 if (!string.IsNullOrWhiteSpace(party) && IsValidPartyName(party)) return party;
             }
 
             return null;
         }
 
-        private static string CleanPartyName(string raw)
+        private static string CleanPartyName(string raw, List<DynamicKeyword>? keywords = null)
         {
             if (string.IsNullOrWhiteSpace(raw)) return "";
-            // Remove financial keywords
-            string cleaned = Regex.Replace(raw, @"(?:\b|^)(الرجاء|تسليم|تسليمات|استلام|استلامات|استلم|دينار|دولار|يورو|ليرة|ريال|درهم|جنيه|باوند|ين|يوان|روبل|فرنك|روبية|تيذر|صرف|قبض|تحويل|إيداع|ايداع|سحب|LYD|USD|EUR|TRY|SAR|AED|EGP|GBP|CNY|BYN|RUB|KWD|QAR|BHD|OMR|JOD|IQD|TND|MAD|DZD|SDG|LBP|SYP|YER|CHF|INR|USDT|JPY)(?:\b|$)", "", RegexOptions.IgnoreCase);
+            // Remove financial keywords and all verb conjugations so they are NEVER treated as customer names
+            string cleaned = Regex.Replace(raw, @"(?:\b|^)(الرجاء|تسليم|تسليمات|سلم|سلمت|سلملي|سلموا|سلمتلك|سلمتلي|سلمتله|تسلم|تسلملي|يسلم|نسلم|استلام|استلامات|استلم|استلمت|استلمتلك|استلمتلي|تستلم|يستلم|نستلم|تحويل|حولت|حولتلك|حولتلي|حولتله|حول|حولنا|حوالة|حواله|دينار|دولار|يورو|ليرة|ريال|درهم|جنيه|باوند|ين|يوان|روبل|فرنك|روبية|تيذر|صرف|صرفت|صرفتلك|قبض|قبضت|قبضتلك|دفع|دفعت|دفعتلك|إيداع|ايداع|أودعت|اودعت|سحب|سحبت|سحبتلك|دزيت|دزيتلك|دزيتلي|بعت|بعتلك|بعتلي|بعثت|بعثتلك|بعثتلي|وصل|وصلني|وصلت|وصلتلك|شحن|شحنت|شحنتلك|LYD|USD|EUR|TRY|SAR|AED|EGP|GBP|CNY|BYN|RUB|KWD|QAR|BHD|OMR|JOD|IQD|TND|MAD|DZD|SDG|LBP|SYP|YER|CHF|INR|USDT|JPY)(?:\b|$)", "", RegexOptions.IgnoreCase);
             // Remove common Arabic stop words, address terms, and tracking terms
             cleaned = Regex.Replace(cleaned, @"(?:\b|^)(تم|تمت|تمه|يتم|عملية|مبلغ|قيمة|قيمه|رصيد|باقي|واصل|فلوس|مصاري|كاش|نقدي|نقد|شيك|حوالة|حواله|دفعة|دفعه|قسط|فاتورة|فاتوره|حساب|بنك|مصرف|فرع|رقم|بتاريخ|اليوم|أمس|امس|غدا|غدوة|الصبح|المسا|على|في|من|الى|إلى|عن|مع|بدون|بعد|قبل|كل|هذا|هذه|هذي|ذلك|هناك|هنا|لكن|أو|او|ان|أن|إن|لا|نعم|ايوا|لأ|كان|يكون|هو|هي|هم|أنا|انا|نحن|انت|أنت|فقط|بس|خلاص|اوكي|تمام|طيب|الله|يسلمك|شكرا|شكراً|مشكور|جزاك|ياريت|لوسمحت|ممكن|رجاءً|رجاء|أرجو|ارجو|عفوا|عفواً|بليز|please|plz|العنوان|عنوان|شارع|طريق|عمارة|شقة|طابق|اسطنبول|istanbul|fatih|تركيا|turkey|اشاري|إشاري|بوليصة|بوليصه|كود|code)(?:\b|$)", "", RegexOptions.IgnoreCase);
             cleaned = Regex.Replace(cleaned, @"[^\p{L}\s]", " ").Trim();
+
+            // Strip any user custom keywords
+            if (keywords != null && keywords.Any())
+            {
+                foreach (var kw in keywords)
+                {
+                    if (!string.IsNullOrWhiteSpace(kw.Word))
+                    {
+                        cleaned = Regex.Replace(cleaned, $@"(?:\b|^){Regex.Escape(kw.Word.Trim())}(?:\b|$)", "", RegexOptions.IgnoreCase);
+                    }
+                }
+            }
+
             var words = cleaned.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (words.Length > 4) cleaned = string.Join(" ", words.Take(4));
             cleaned = cleaned.Trim();
@@ -716,10 +729,11 @@ namespace Eqfal.API.Services
             // Reject keyboard mash / random two-letter oscillations (e.g. طؤط, طهط, طنط, طط)
             if (Regex.IsMatch(name, @"^(?:ط[ؤهنت][ط]?|هه|خخ|ءء)+$", RegexOptions.IgnoreCase)) return false;
 
-            // Reject common casual chat words
+            // Reject common casual chat words and financial verbs
             var chatWords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "نشرحلهم", "صفوها", "كلهم", "الحمدلله", "دفعه", "دفعة", "دفعتي", "شباب", "مرحبا", "اهلين", "عادي", "وينك", "باهي", "صحه", "مبروك"
+                "نشرحلهم", "صفوها", "كلهم", "الحمدلله", "دفعه", "دفعة", "دفعتي", "شباب", "مرحبا", "اهلين", "عادي", "وينك", "باهي", "صحه", "مبروك",
+                "حولتلك", "حولتلي", "حولتله", "حولت", "سلمتلك", "سلمتلي", "سلمتله", "سلمت", "دزيتلك", "دزيتلي", "بعتلك", "بعتلي", "بعثتلك", "بعثتلي", "قبضتلك", "وصلتلك"
             };
 
             var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
