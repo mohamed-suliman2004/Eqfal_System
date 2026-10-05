@@ -983,6 +983,7 @@
                 <th class="p-3">مرات الاستخدام</th>
                 <th class="p-3">الحد الأقصى</th>
                 <th class="p-3 text-center">الحالة</th>
+                <th class="p-3 text-center">الإجراءات</th>
               </tr>
             </thead>
             <tbody id="discounts-table-body" class="divide-y divide-slate-800/60 text-xs">
@@ -1207,6 +1208,148 @@
         <button onclick="closeAddMarketerModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs font-medium transition">إلغاء</button>
         <button onclick="submitAddMarketer()" id="btn-submit-marketer" class="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-medium shadow-lg shadow-teal-600/30 transition">
           حفظ وإصدار الكود
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Marketer Modal -->
+  <div id="edit-marketer-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden">
+    <div class="glass-card max-w-xl w-full p-6 space-y-4 border-indigo-500/30 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-indigo-400">edit_note</span>
+          <h3 class="font-bold text-base text-white">تعديل بيانات المسوق وإدارة أكواد الخصم</h3>
+        </div>
+        <button onclick="closeEditMarketerModal()" class="text-slate-400 hover:text-white transition">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <input type="hidden" id="edit-m-id">
+
+      <div class="space-y-4 text-xs">
+        <!-- بيانات المسوق الأساسية -->
+        <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800 space-y-3">
+          <h4 class="font-bold text-slate-200 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm text-indigo-400">person</span>
+            البيانات الأساسية للمسوق
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-medium text-slate-300 mb-1">اسم المسوق:</label>
+              <input type="text" id="edit-m-name" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+            </div>
+            <div>
+              <label class="block font-medium text-slate-300 mb-1">رقم الهاتف:</label>
+              <input type="text" id="edit-m-phone" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-indigo-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block font-medium text-slate-300 mb-1">نوع العمولة:</label>
+              <select id="edit-m-comm-type" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+                <option value="0">نسبة مئوية (%)</option>
+                <option value="1">مبلغ ثابت (د.ل)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-300 mb-1">قيمة العمولة:</label>
+              <input type="number" id="edit-m-comm-value" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-indigo-500">
+            </div>
+            <div>
+              <label class="block font-medium text-slate-300 mb-1">حالة المسوق:</label>
+              <select id="edit-m-active" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+                <option value="true">نشط 🟢</option>
+                <option value="false">معطل 🔴</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- أكواد الخصم الحالية للمسوق -->
+        <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-800 space-y-2">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-slate-200 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm text-amber-400">local_offer</span>
+              أكواد الخصم الحالية لهذا المسوق
+            </h4>
+            <span id="edit-m-codes-count" class="text-[11px] text-slate-400 font-mono">0 كود</span>
+          </div>
+          <div id="edit-m-codes-list" class="space-y-2 max-h-40 overflow-y-auto">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- إضافة كود خصم جديد (اختياري) -->
+        <div class="bg-indigo-950/20 p-3.5 rounded-xl border border-indigo-500/30 space-y-3">
+          <h4 class="font-bold text-indigo-300 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm text-emerald-400">add_circle</span>
+            إضافة كود خصم جديد للمسوق (اختياري)
+          </h4>
+          <p class="text-[11px] text-slate-400">إذا انتهى كود المسوق أو ترغب بمنحه كوداً جديداً، اكتب الكود هنا واختر ما إذا كنت ترغب بحذف/تعطيل الكود القديم أو تركه كما هو.</p>
+
+          <div>
+            <label class="block font-medium text-slate-300 mb-1">الكود الجديد:</label>
+            <div class="flex gap-2">
+              <input type="text" id="edit-m-new-code" placeholder="اتركه فارغاً إن لم ترغب بإضافة كود جديد" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-emerald-400 font-mono font-bold uppercase focus:outline-none focus:border-indigo-500">
+              <button type="button" onclick="generateEditCode()" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs shrink-0">توليد كود</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-medium text-slate-300 mb-1">نوع الخصم للعميل:</label>
+              <select id="edit-m-disc-type" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+                <option value="0">نسبة مئوية (%)</option>
+                <option value="1">مبلغ ثابت (د.ل)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-medium text-slate-300 mb-1">قيمة الخصم للعميل:</label>
+              <input type="number" id="edit-m-disc-value" value="10" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-indigo-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-medium text-slate-300 mb-1">الحد الأقصى للاستخدام:</label>
+              <input type="number" id="edit-m-max-uses" placeholder="غير محدود (فارغ)" min="1" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-indigo-500">
+            </div>
+            <div>
+              <label class="block font-medium text-slate-300 mb-1">تاريخ الانتهاء (اختياري):</label>
+              <input type="date" id="edit-m-expiry" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-indigo-500">
+            </div>
+          </div>
+
+          <!-- خيارات التعامل مع الكود القديم -->
+          <div class="pt-2 border-t border-indigo-500/20 space-y-1.5">
+            <span class="block font-bold text-slate-300 text-[11px]">التعامل مع الأكواد السابقة لهذا المسوق:</span>
+            <div class="flex flex-col gap-1.5 text-[11px] text-slate-300">
+              <label class="flex items-center gap-2 cursor-pointer hover:text-white">
+                <input type="radio" name="edit-m-old-action" value="keep" checked class="text-indigo-600 focus:ring-0">
+                <span>الاحتفاظ بالأكواد القديمة (إبقاء الكود القديم شغالاً بجانب الجديد)</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer hover:text-white">
+                <input type="radio" name="edit-m-old-action" value="deactivate" class="text-indigo-600 focus:ring-0">
+                <span>تعطيل الأكواد القديمة فقط (إيقافها وتفعيل الكود الجديد)</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer hover:text-white text-rose-300">
+                <input type="radio" name="edit-m-old-action" value="delete" class="text-rose-600 focus:ring-0">
+                <span>حذف الأكواد القديمة نهائياً من النظام</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div id="edit-marketer-error" class="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs hidden"></div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button onclick="closeEditMarketerModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs font-medium transition">إلغاء</button>
+        <button onclick="submitEditMarketer()" id="btn-submit-edit-marketer" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium shadow-lg shadow-indigo-600/30 transition">
+          حفظ التعديلات
         </button>
       </div>
     </div>

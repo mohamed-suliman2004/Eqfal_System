@@ -136,6 +136,19 @@ namespace Eqfal.API.Controllers
                     commissionType = (int)m.CommissionType,
                     commissionValue = m.CommissionValue,
                     discountCode = m.DiscountCodes.FirstOrDefault(c => c.IsActive)?.Code ?? m.DiscountCodes.FirstOrDefault()?.Code,
+                    discountCodes = m.DiscountCodes.OrderByDescending(c => c.CreatedAt).Select(c => new
+                    {
+                        id = c.Id,
+                        code = c.Code,
+                        discountType = (int)c.DiscountType,
+                        value = c.Value,
+                        maxUses = c.MaxUses,
+                        timesUsed = c.TimesUsed,
+                        expiresAt = c.ExpiresAt,
+                        isActive = c.IsActive,
+                        isUsable = c.IsUsable,
+                        createdAt = c.CreatedAt
+                    }).ToList(),
                     isActive = m.IsActive,
                     notes = m.Notes,
                     createdAt = m.CreatedAt,
@@ -252,9 +265,12 @@ namespace Eqfal.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateMarketer(Guid id, [FromBody] MarketerUpsertDto dto)
         {
-            var marketer = await _context.Marketers.FindAsync(id);
+            var marketer = await _context.Marketers
+                .Include(m => m.DiscountCodes)
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (marketer == null) return NotFound(new { success = false, message = "المسوق غير موجود" });
 
+            if (!string.IsNullOrWhiteSpace(dto.Name)) marketer.Name = dto.Name.Trim();
             var phone = !string.IsNullOrWhiteSpace(dto.Phone) ? dto.Phone.Trim() : dto.PhoneNumber?.Trim();
             if (!string.IsNullOrWhiteSpace(phone)) marketer.Phone = phone;
             marketer.Email = dto.Email?.Trim();
@@ -264,8 +280,124 @@ namespace Eqfal.API.Controllers
             marketer.IsActive = dto.IsActive;
             marketer.Notes = dto.Notes?.Trim();
 
+            // إذا تم تزويد كود خصم جديد أثناء التعديل
+            if (!string.IsNullOrWhiteSpace(dto.DiscountCode))
+            {
+                string normCode = dto.DiscountCode.Trim().ToUpperInvariant();
+                var existsOther = await _context.DiscountCodes.AnyAsync(d => d.Code == normCode && d.MarketerId != id);
+                if (existsOther)
+                {
+                    return BadRequest(new { success = false, message = "كود الخصم مستخدم بالفعل لمسوق آخر" });
+                }
+
+                // خيار حذف الأكواد القديمة
+                if (dto.DeleteOldCodes)
+                {
+                    foreach (var oldCode in marketer.DiscountCodes.ToList())
+                    {
+                        var txs = await _context.MarketerTransactions.Where(t => t.DiscountCodeId == oldCode.Id).ToListAsync();
+                        foreach (var tx in txs) tx.DiscountCodeId = null;
+                        _context.DiscountCodes.Remove(oldCode);
+                    }
+                }
+                else if (dto.DeactivateOldCodes)
+                {
+                    foreach (var oldCode in marketer.DiscountCodes)
+                    {
+                        oldCode.IsActive = false;
+                    }
+                }
+
+                // التحقق هل الكود موجود مسبقاً لنفس المسوق أم جديد
+                var sameCode = marketer.DiscountCodes.FirstOrDefault(d => d.Code == normCode);
+                if (sameCode != null)
+                {
+                    sameCode.IsActive = true;
+                    if (dto.DiscountType.HasValue) sameCode.DiscountType = (DiscountType)dto.DiscountType.Value;
+                    if (dto.DiscountValue.HasValue) sameCode.Value = dto.DiscountValue.Value;
+                    sameCode.CommissionType = (DiscountType)dto.CommissionType;
+                    sameCode.CommissionValue = dto.CommissionValue;
+                    sameCode.MaxUses = dto.MaxUses ?? dto.MaxUsages;
+                    sameCode.ExpiresAt = dto.ExpiresAt;
+                }
+                else
+                {
+                    var newCode = new DiscountCode
+                    {
+                        Code = normCode,
+                        MarketerId = marketer.Id,
+                        DiscountType = dto.DiscountType.HasValue ? (DiscountType)dto.DiscountType.Value : DiscountType.Percentage,
+                        Value = dto.DiscountValue ?? 10m,
+                        CommissionType = (DiscountType)dto.CommissionType,
+                        CommissionValue = dto.CommissionValue,
+                        MaxUses = dto.MaxUses ?? dto.MaxUsages,
+                        ExpiresAt = dto.ExpiresAt,
+                        IsActive = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    _context.DiscountCodes.Add(newCode);
+                }
+            }
+
             await _context.SaveChangesAsync();
             return Ok(new { success = true, message = "تم تعديل بيانات المسوق بنجاح" });
+        }
+
+        /// <summary>
+        /// إضافة كود خصم جديد لمسوق موجود مع إمكانية حذف الكود القديم أو الاحتفاظ به
+        /// </summary>
+        [HttpPost("{id}/codes")]
+        public async Task<IActionResult> AddCodeToMarketer(Guid id, [FromBody] MarketerNewCodeDto dto)
+        {
+            var marketer = await _context.Marketers
+                .Include(m => m.DiscountCodes)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (marketer == null) return NotFound(new { success = false, message = "المسوق غير موجود" });
+
+            if (string.IsNullOrWhiteSpace(dto.Code))
+                return BadRequest(new { success = false, message = "كود الخصم مطلوب" });
+
+            string normCode = dto.Code.Trim().ToUpperInvariant();
+            if (await _context.DiscountCodes.AnyAsync(d => d.Code == normCode))
+                return BadRequest(new { success = false, message = "هذا الكود مستخدم بالفعل، يرجى اختيار كود آخر" });
+
+            // خيار حذف الأكواد القديمة
+            if (dto.DeleteOldCodes)
+            {
+                foreach (var oldCode in marketer.DiscountCodes.ToList())
+                {
+                    var txs = await _context.MarketerTransactions.Where(t => t.DiscountCodeId == oldCode.Id).ToListAsync();
+                    foreach (var tx in txs) tx.DiscountCodeId = null;
+                    _context.DiscountCodes.Remove(oldCode);
+                }
+            }
+            else if (dto.DeactivateOldCodes)
+            {
+                foreach (var oldCode in marketer.DiscountCodes)
+                {
+                    oldCode.IsActive = false;
+                }
+            }
+
+            var disc = new DiscountCode
+            {
+                Code = normCode,
+                MarketerId = marketer.Id,
+                DiscountType = (DiscountType)dto.DiscountType,
+                Value = dto.DiscountValue,
+                CommissionType = (DiscountType)(dto.CommissionType ?? (int)marketer.CommissionType),
+                CommissionValue = dto.CommissionValue ?? marketer.CommissionValue,
+                MaxUses = dto.MaxUses,
+                ExpiresAt = dto.ExpiresAt,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.DiscountCodes.Add(disc);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, message = "تم إضافة كود الخصم للمسوق بنجاح", data = disc.Id });
         }
 
         [HttpDelete("{id}")]
@@ -278,18 +410,31 @@ namespace Eqfal.API.Controllers
 
             if (marketer == null) return NotFound(new { success = false, message = "المسوق غير موجود" });
 
-            if (marketer.DiscountCodes.Any() || marketer.Transactions.Any())
+            // 1. فك ارتباط الكود بالحركات المسجلة لكي لا يعترض قيود الـ FK
+            foreach (var tx in marketer.Transactions)
             {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = "لا يمكن حذف المسوق لوجود أكواد خصم أو حركات مالية مرتبطة به — يمكنك تعطيل حسابه بدلاً من الحذف"
-                });
+                tx.DiscountCodeId = null;
             }
 
+            var codeIds = marketer.DiscountCodes.Select(c => c.Id).ToList();
+            if (codeIds.Any())
+            {
+                var otherTxs = await _context.MarketerTransactions
+                    .Where(t => t.DiscountCodeId.HasValue && codeIds.Contains(t.DiscountCodeId.Value))
+                    .ToListAsync();
+                foreach (var tx in otherTxs)
+                {
+                    tx.DiscountCodeId = null;
+                }
+            }
+
+            // 2. حذف الحركات وأكواد الخصم والمسوق
+            _context.MarketerTransactions.RemoveRange(marketer.Transactions);
+            _context.DiscountCodes.RemoveRange(marketer.DiscountCodes);
             _context.Marketers.Remove(marketer);
+
             await _context.SaveChangesAsync();
-            return Ok(new { success = true, message = "تم حذف المسوق بنجاح" });
+            return Ok(new { success = true, message = "تم حذف المسوق وجميع بياناته بنجاح" });
         }
 
         /// <summary>
@@ -437,6 +582,21 @@ namespace Eqfal.API.Controllers
         public int? MaxUses { get; set; }
         public int? MaxUsages { get; set; }
         public DateTime? ExpiresAt { get; set; }
+        public bool DeleteOldCodes { get; set; } = false;
+        public bool DeactivateOldCodes { get; set; } = false;
+    }
+
+    public class MarketerNewCodeDto
+    {
+        public string Code { get; set; } = string.Empty;
+        public int DiscountType { get; set; } = 0;
+        public decimal DiscountValue { get; set; } = 10;
+        public int? CommissionType { get; set; }
+        public decimal? CommissionValue { get; set; }
+        public int? MaxUses { get; set; }
+        public DateTime? ExpiresAt { get; set; }
+        public bool DeleteOldCodes { get; set; } = false;
+        public bool DeactivateOldCodes { get; set; } = false;
     }
 
     public class MarketerPayoutRequest

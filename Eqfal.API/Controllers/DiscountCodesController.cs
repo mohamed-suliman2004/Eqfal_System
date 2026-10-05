@@ -206,13 +206,14 @@ namespace Eqfal.API.Controllers
             var code = await _context.DiscountCodes.FindAsync(id);
             if (code == null) return NotFound(new { success = false, message = "كود الخصم غير موجود" });
 
-            if (code.TimesUsed > 0)
+            // فك ارتباط الحركات المالية المسجلة بالكود حتى لا يحدث تعارض مع المفتاح الأجنبي،
+            // مع الحفاظ على نص الكود المحفوظ (DiscountCodeText) في السجل المالي
+            var relatedTxs = await _context.MarketerTransactions
+                .Where(t => t.DiscountCodeId == id)
+                .ToListAsync();
+            foreach (var tx in relatedTxs)
             {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = "لا يمكن حذف كود سبق استخدامه — يمكنك تعطيله بدلاً من ذلك"
-                });
+                tx.DiscountCodeId = null;
             }
 
             _context.DiscountCodes.Remove(code);

@@ -1401,27 +1401,50 @@ function renderMarketersTable() {
     const isPercent = m.commissionType === 0 || m.commissionType === 'Percentage';
     const commDesc = isPercent ? `${m.commissionValue}%` : `${m.commissionValue} د.ل (ثابت)`;
     const phone = m.phone || m.phoneNumber || '—';
-    const code = m.discountCode || '—';
     const curBalance = m.currentBalance !== undefined ? m.currentBalance : (m.balance || 0);
     const totEarned = m.totalEarned !== undefined ? m.totalEarned : (m.totalAccrued || 0);
     const totPaid = m.totalPaid || 0;
     const safeName = (m.name || '').replace(/'/g, "\\'");
 
+    let codesHtml = '—';
+    if (Array.isArray(m.discountCodes) && m.discountCodes.length > 0) {
+      codesHtml = `<div class="flex flex-wrap gap-1 max-w-[220px]">` + m.discountCodes.map(c => {
+        const isAct = c.isActive && (c.maxUses === null || c.timesUsed < c.maxUses);
+        const badgeClass = isAct 
+          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' 
+          : 'bg-rose-500/10 text-rose-500 border-rose-500/30 line-through opacity-75';
+        return `<span class="px-1.5 py-0.5 rounded border text-[11px] font-mono font-bold ${badgeClass}" title="${c.timesUsed}/${c.maxUses || '∞'} استخدام">${c.code}</span>`;
+      }).join('') + `</div>`;
+    } else if (m.discountCode) {
+      codesHtml = `<span class="font-mono text-emerald-600 dark:text-emerald-400 font-bold tracking-wider">${m.discountCode}</span>`;
+    }
+
     return `
       <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition">
-        <td class="p-3.5 font-bold text-slate-900 dark:text-white">${m.name || '—'}</td>
+        <td class="p-3.5 font-bold text-slate-900 dark:text-white">
+          <div class="flex items-center gap-1.5">
+            <span>${m.name || '—'}</span>
+            ${m.isActive === false ? '<span class="text-[10px] px-1 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20">معطل</span>' : ''}
+          </div>
+        </td>
         <td class="p-3.5 font-mono text-slate-700 dark:text-slate-300">${phone}</td>
-        <td class="p-3.5 font-mono text-emerald-600 dark:text-emerald-400 font-bold tracking-wider">${code}</td>
+        <td class="p-3.5">${codesHtml}</td>
         <td class="p-3.5 text-slate-700 dark:text-slate-300 font-medium">${commDesc}</td>
         <td class="p-3.5 font-mono font-bold text-amber-600 dark:text-amber-400">${Number(curBalance).toFixed(2)} د.ل</td>
         <td class="p-3.5 font-mono text-emerald-600 dark:text-emerald-400 font-bold">${Number(totEarned).toFixed(2)} د.ل</td>
         <td class="p-3.5 font-mono text-slate-500 dark:text-slate-400">${Number(totPaid).toFixed(2)} د.ل</td>
-        <td class="p-3.5 text-center flex items-center justify-center gap-1.5">
-          <button onclick="openPayoutModal('${m.id}', '${safeName}', ${curBalance})" class="px-2.5 py-1 rounded bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-xs font-bold transition" title="صرف دفعة">
+        <td class="p-3.5 text-center flex items-center justify-center gap-1.5 flex-wrap">
+          <button onclick="openEditMarketerModal('${m.id}')" class="px-2 py-1 rounded bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 text-xs font-bold transition flex items-center gap-1" title="تعديل المسوق وإدارة الأكواد">
+            <span class="material-symbols-outlined text-xs">edit</span> تعديل / كود
+          </button>
+          <button onclick="openPayoutModal('${m.id}', '${safeName}', ${curBalance})" class="px-2 py-1 rounded bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-xs font-bold transition" title="صرف دفعة">
             صرف دفعة
           </button>
-          <button onclick="openMarketerLedgerModal('${m.id}', '${safeName}')" class="px-2.5 py-1 rounded bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-300 text-xs font-medium transition" title="كشف الحساب">
+          <button onclick="openMarketerLedgerModal('${m.id}', '${safeName}')" class="px-2 py-1 rounded bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-300 text-xs font-medium transition" title="كشف الحساب">
             كشف حساب
+          </button>
+          <button onclick="confirmDeleteMarketer('${m.id}', '${safeName}')" class="px-2 py-1 rounded bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs font-bold transition flex items-center gap-1" title="حذف المسوق">
+            <span class="material-symbols-outlined text-xs">delete</span> حذف
           </button>
         </td>
       </tr>
@@ -1636,7 +1659,7 @@ function renderDiscountsTable() {
   if (!tbody) return;
 
   if (!cachedDiscounts || cachedDiscounts.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500 font-semibold">لا توجد أكواد خصم مسجلة</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-500 font-semibold">لا توجد أكواد خصم مسجلة</td></tr>`;
     return;
   }
 
@@ -1657,6 +1680,11 @@ function renderDiscountsTable() {
         <td class="p-3 text-slate-700 dark:text-slate-300">${timesUsed}</td>
         <td class="p-3 text-slate-500 dark:text-slate-400">${maxUses}</td>
         <td class="p-3 text-center">${st}</td>
+        <td class="p-3 text-center">
+          <button onclick="confirmDeleteDiscountCode('${d.id}', '${d.code}')" class="px-2 py-1 rounded bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs font-bold transition inline-flex items-center gap-1" title="حذف الكود">
+            <span class="material-symbols-outlined text-xs">delete</span> حذف
+          </button>
+        </td>
       </tr>
     `;
   }).join('');
@@ -1723,6 +1751,240 @@ async function submitAddDiscountCode() {
   } catch (e) {
     btn.disabled = false;
     btn.innerText = 'تفعيل كود الخصم';
+    errDiv.innerText = 'حدث خطأ في الاتصال بالخادم';
+    errDiv.classList.remove('hidden');
+  }
+}
+
+// ==================== حذف كود خصم ====================
+async function confirmDeleteDiscountCode(id, code) {
+  if (!confirm(`هل أنت متأكد من حذف كود الخصم "${code}" نهائياً؟`)) return;
+
+  try {
+    const res = await authFetch(`${API_BASE}/DiscountCodes/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast('تم الحذف!', `تم حذف كود الخصم ${code} بنجاح.`, 'success');
+      addLog('SUCCESS', `حذف كود الخصم ${code}`, 'DiscountAdmin');
+      fetchDiscountCodes();
+      fetchMarketers();
+    } else {
+      showToast('خطأ!', data.message || 'فشل حذف كود الخصم', 'error');
+    }
+  } catch (e) {
+    showToast('خطأ!', 'حدث خطأ أثناء محاولة حذف كود الخصم', 'error');
+  }
+}
+
+// ==================== حذف مسوق ====================
+async function confirmDeleteMarketer(id, name) {
+  if (!confirm(`هل أنت متأكد من حذف المسوق "${name}" نهائياً من المنظومة؟\n\nتنبيه: سيتم حذف جميع أكواد الخصم والحركات المالية التابعة له.`)) return;
+
+  try {
+    const res = await authFetch(`${API_BASE}/Marketers/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast('تم الحذف!', `تم حذف المسوق "${name}" بنجاح.`, 'success');
+      addLog('SUCCESS', `حذف المسوق ${name} (#${id})`, 'MarketerAdmin');
+      fetchMarketers();
+      fetchDiscountCodes();
+    } else {
+      showToast('خطأ!', data.message || 'فشل حذف المسوق', 'error');
+    }
+  } catch (e) {
+    showToast('خطأ!', 'حدث خطأ أثناء محاولة حذف المسوق', 'error');
+  }
+}
+
+// ==================== تعديل مسوق وإدارة أكواده ====================
+function generateEditCode() {
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  const mName = document.getElementById('edit-m-name')?.value?.trim() || '';
+  let prefix = 'EQF';
+  if (mName) {
+    const clean = mName.replace(/[^\u0621-\u064Aa-zA-Z]/g, '');
+    if (clean.length >= 2) prefix = clean.substring(0, Math.min(4, clean.length)).toUpperCase();
+  }
+  document.getElementById('edit-m-new-code').value = `${prefix}-${rand}`;
+}
+
+function openEditMarketerModal(marketerId) {
+  const m = cachedMarketers.find(x => x.id === marketerId);
+  if (!m) return;
+
+  document.getElementById('edit-marketer-modal').classList.remove('hidden');
+  document.getElementById('edit-m-id').value = m.id;
+  document.getElementById('edit-m-name').value = m.name || '';
+  document.getElementById('edit-m-phone').value = m.phone || m.phoneNumber || '';
+  document.getElementById('edit-m-comm-type').value = (m.commissionType === 1 || m.commissionType === 'Fixed') ? '1' : '0';
+  document.getElementById('edit-m-comm-value').value = m.commissionValue !== undefined ? m.commissionValue : 10;
+  document.getElementById('edit-m-active').value = (m.isActive !== false) ? 'true' : 'false';
+  
+  // تصفير حقول الكود الجديد
+  document.getElementById('edit-m-new-code').value = '';
+  document.getElementById('edit-m-disc-type').value = '0';
+  document.getElementById('edit-m-disc-value').value = '10';
+  document.getElementById('edit-m-max-uses').value = '';
+  document.getElementById('edit-m-expiry').value = '';
+  const radioKeep = document.querySelector('input[name="edit-m-old-action"][value="keep"]');
+  if (radioKeep) radioKeep.checked = true;
+  document.getElementById('edit-marketer-error').classList.add('hidden');
+
+  // عرض الأكواد الحالية للمسوق
+  renderEditMarketerCodes(m);
+}
+
+function renderEditMarketerCodes(marketer) {
+  const container = document.getElementById('edit-m-codes-list');
+  const countEl = document.getElementById('edit-m-codes-count');
+  if (!container) return;
+
+  const codes = marketer.discountCodes || [];
+  if (countEl) countEl.innerText = `${codes.length} كود`;
+
+  if (codes.length === 0) {
+    if (marketer.discountCode) {
+      container.innerHTML = `
+        <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800">
+          <div class="flex items-center gap-2">
+            <span class="font-mono font-bold text-emerald-400 text-sm">${marketer.discountCode}</span>
+            <span class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px]">كود رئيسي</span>
+          </div>
+        </div>
+      `;
+    } else {
+      container.innerHTML = `<div class="p-3 text-center text-slate-500">لا توجد أكواد خصم مسجلة لهذا المسوق حالياً</div>`;
+    }
+    return;
+  }
+
+  container.innerHTML = codes.map(c => {
+    const isAct = c.isActive && (c.maxUses === null || c.timesUsed < c.maxUses);
+    const badge = isAct 
+      ? '<span class="text-emerald-400 font-bold text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">شغال 🟢</span>'
+      : '<span class="text-rose-400 font-bold text-[10px] px-1.5 py-0.5 rounded bg-rose-500/10 border border-rose-500/20">معطل / منتهي 🔴</span>';
+    const uses = `${c.timesUsed || 0} / ${c.maxUses ? c.maxUses : 'غير محدود'}`;
+    const discStr = c.discountType === 1 ? `${c.value} د.ل` : `${c.value}%`;
+    const safeCode = (c.code || '').replace(/'/g, "\\'");
+
+    return `
+      <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="font-mono font-bold text-emerald-400 text-sm">${c.code}</span>
+          <span class="text-slate-400 font-mono text-[11px]">(خصم: ${discStr})</span>
+          <span class="text-slate-400 font-mono text-[11px]">(استخدام: ${uses})</span>
+          ${badge}
+        </div>
+        <button type="button" onclick="deleteCodeFromMarketer('${c.id}', '${safeCode}', '${marketer.id}')" class="px-2 py-1 rounded bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 border border-rose-500/30 text-[11px] font-bold transition flex items-center gap-1 shrink-0" title="حذف الكود">
+          <span class="material-symbols-outlined text-xs">delete</span> حذف
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+function closeEditMarketerModal() {
+  document.getElementById('edit-marketer-modal').classList.add('hidden');
+}
+
+async function deleteCodeFromMarketer(codeId, codeName, marketerId) {
+  if (!confirm(`هل أنت متأكد من حذف كود الخصم "${codeName}"؟`)) return;
+
+  try {
+    const res = await authFetch(`${API_BASE}/DiscountCodes/${codeId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast('تم الحذف!', `تم حذف الكود "${codeName}" بنجاح.`, 'success');
+      await fetchMarketers();
+      await fetchDiscountCodes();
+      const updatedM = cachedMarketers.find(x => x.id === marketerId);
+      if (updatedM) {
+        renderEditMarketerCodes(updatedM);
+      } else {
+        closeEditMarketerModal();
+      }
+    } else {
+      showToast('خطأ!', data.message || 'فشل حذف الكود', 'error');
+    }
+  } catch (e) {
+    showToast('خطأ!', 'حدث خطأ أثناء حذف الكود', 'error');
+  }
+}
+
+async function submitEditMarketer() {
+  const marketerId = document.getElementById('edit-m-id').value;
+  const name = document.getElementById('edit-m-name').value.trim();
+  const phone = document.getElementById('edit-m-phone').value.trim();
+  const commType = parseInt(document.getElementById('edit-m-comm-type').value);
+  const commValue = parseFloat(document.getElementById('edit-m-comm-value').value);
+  const isActive = document.getElementById('edit-m-active').value === 'true';
+
+  const newCode = document.getElementById('edit-m-new-code').value.trim().toUpperCase();
+  const discType = parseInt(document.getElementById('edit-m-disc-type').value);
+  const discValue = parseFloat(document.getElementById('edit-m-disc-value').value);
+  const maxUsesVal = document.getElementById('edit-m-max-uses').value;
+  const maxUses = maxUsesVal ? parseInt(maxUsesVal) : null;
+  const expiryVal = document.getElementById('edit-m-expiry').value;
+  const expiresAt = expiryVal ? new Date(expiryVal).toISOString() : null;
+
+  const oldAction = document.querySelector('input[name="edit-m-old-action"]:checked')?.value || 'keep';
+  const deleteOldCodes = oldAction === 'delete';
+  const deactivateOldCodes = oldAction === 'deactivate';
+
+  const errDiv = document.getElementById('edit-marketer-error');
+  const btn = document.getElementById('btn-submit-edit-marketer');
+
+  if (!name || !phone) {
+    errDiv.innerText = 'يرجى إدخال اسم المسوق ورقم الهاتف';
+    errDiv.classList.remove('hidden');
+    return;
+  }
+
+  errDiv.classList.add('hidden');
+  btn.disabled = true;
+  btn.innerText = 'جاري الحفظ...';
+
+  try {
+    const payload = {
+      name,
+      phone,
+      phoneNumber: phone,
+      commissionType: commType,
+      commissionValue: commValue,
+      isActive,
+      deleteOldCodes,
+      deactivateOldCodes
+    };
+
+    if (newCode) {
+      payload.discountCode = newCode;
+      payload.discountType = discType;
+      payload.discountValue = discValue;
+      payload.maxUses = maxUses;
+      payload.expiresAt = expiresAt;
+    }
+
+    const res = await authFetch(`${API_BASE}/Marketers/${marketerId}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    btn.disabled = false;
+    btn.innerText = 'حفظ التعديلات';
+
+    if (res.ok && data.success) {
+      closeEditMarketerModal();
+      showToast('تم التعديل بنجاح!', newCode ? `تم حفظ بيانات المسوق وإصدار الكود الجديد "${newCode}".` : 'تم حفظ بيانات المسوق بنجاح.', 'success');
+      addLog('SUCCESS', `تعديل بيانات المسوق: ${name}` + (newCode ? ` بكود جديد ${newCode}` : ''), 'MarketerAdmin');
+      fetchMarketers();
+      fetchDiscountCodes();
+    } else {
+      errDiv.innerText = data.message || 'فشل تعديل بيانات المسوق';
+      errDiv.classList.remove('hidden');
+    }
+  } catch (e) {
+    btn.disabled = false;
+    btn.innerText = 'حفظ التعديلات';
     errDiv.innerText = 'حدث خطأ في الاتصال بالخادم';
     errDiv.classList.remove('hidden');
   }
