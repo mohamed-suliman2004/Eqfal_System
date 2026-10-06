@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/subscription_service.dart';
 
 class PaymentWebViewScreen extends StatefulWidget {
@@ -49,6 +50,19 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
           },
           onWebResourceError: (WebResourceError error) {
             debugPrint('Payment WebView error: ${error.description}');
+          },
+          onNavigationRequest: (NavigationRequest request) {
+            final url = request.url;
+            if (url.startsWith('http://') || url.startsWith('https://')) {
+              return NavigationDecision.navigate;
+            }
+            try {
+              final uri = Uri.parse(url);
+              launchUrl(uri, mode: LaunchMode.externalApplication);
+            } catch (e) {
+              debugPrint('Could not launch external url: $url, error: $e');
+            }
+            return NavigationDecision.prevent;
           },
         ),
       )
