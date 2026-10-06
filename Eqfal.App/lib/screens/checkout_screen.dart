@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'payment_webview_screen.dart';
 import '../models/subscription_models.dart';
 import '../services/subscription_service.dart';
 
@@ -116,16 +117,29 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       if (paymentUrl != null && paymentUrl.isNotEmpty) {
         _activePaymentId = paymentId;
-        final uri = Uri.parse(paymentUrl);
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-        }
 
-        // بدء استعلام الحالة التلقائي (Polling) كل 4 ثوانٍ
-        _startPolling(paymentId);
-        _showWaitingModal();
+        final paid = await Navigator.push<bool>(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PaymentWebViewScreen(
+              paymentUrl: paymentUrl,
+              paymentId: paymentId,
+            ),
+          ),
+        );
+
+        if (!mounted) return;
+        setState(() => _isProcessingPayment = false);
+
+        if (paid == true) {
+          _showSuccessDialog('تم استلام وتأكيد سدادك بنجاح! اشتراكك مفعل الآن.');
+        } else if (paid == false) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('تم إلغاء عملية الدفع', textAlign: TextAlign.right)),
+          );
+        }
       } else {
-        throw Exception('تعذر استلام رابط الدفع من EzonePay');
+        throw Exception('تعذر استلام رابط الدفع الإلكتروني');
       }
     } catch (e) {
       if (mounted) {
@@ -138,104 +152,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         );
       }
     }
-  }
-
-  void _startPolling(String paymentId) {
-    _pollingTimer?.cancel();
-    int attempts = 0;
-    const maxAttempts = 225; // 15 دقيقة كحد أقصى
-
-    _pollingTimer = Timer.periodic(const Duration(seconds: 4), (timer) async {
-      attempts++;
-      if (attempts > maxAttempts) {
-        timer.cancel();
-        return;
-      }
-
-      final status = await _subService.getPaymentStatus(paymentId);
-      if (status == 'Settled') {
-        timer.cancel();
-        if (mounted) {
-          Navigator.of(context, rootNavigator: true).pop(); // إغلاق نافذة الانتظار
-          _showSuccessDialog('تم استلام وتأكيد سدادك بنجاح! اشتراكك مفعل الآن.');
-        }
-      } else if (status == 'Cancelled' || status == 'Rejected') {
-        timer.cancel();
-        if (mounted) {
-          Navigator.of(context, rootNavigator: true).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('تم إلغاء عملية الدفع', textAlign: TextAlign.right)),
-          );
-          setState(() => _isProcessingPayment = false);
-        }
-      }
-    });
-  }
-
-  void _showWaitingModal() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            const SizedBox(
-              width: 48,
-              height: 48,
-              child: CircularProgressIndicator(color: Color(0xFF0284C7), strokeWidth: 3.5),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'جارٍ انتظار إتمام الدفع...',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'تم فتح صفحة الدفع في EzonePay. يرجى إتمام السداد بالبطاقة أو سداد وسنفعّل حسابك فوراً.',
-              style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () async {
-                if (_activePaymentId != null) {
-                  final s = await _subService.getPaymentStatus(_activePaymentId!);
-                  if (!mounted) return;
-                  if (s == 'Settled') {
-                    _pollingTimer?.cancel();
-                    if (ctx.mounted) Navigator.pop(ctx);
-                    _showSuccessDialog('تم تأكيد الدفع بنجاح!');
-                    return;
-                  }
-                }
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('العملية ما زالت قيد المعالجة، يرجى إتمام الدفع أولاً', textAlign: TextAlign.right)),
-                );
-              },
-              icon: const Icon(Icons.refresh, size: 18),
-              label: const Text('تحقّقت من الدفع'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0284C7),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                _pollingTimer?.cancel();
-                Navigator.pop(ctx);
-                setState(() => _isProcessingPayment = false);
-              },
-              child: const Text('إغلاق والعودة', style: TextStyle(color: Color(0xFF94A3B8))),
-            )
-          ],
-        ),
-      ),
-    );
   }
 
   void _showSuccessDialog(String message) {
@@ -500,7 +416,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
                         const SizedBox(width: 12),
                         Text(
-                          finalPrice <= 0 ? 'جارٍ تفعيل الاشتراك مجاناً...' : 'جارٍ الاتصال ببوابة EzonePay...',
+                          finalPrice <= 0 ? 'جارٍ تفعيل الاشتراك مجاناً...' : 'جارٍ معالجة الدفع...',
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                         ),
                       ],
@@ -513,7 +429,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         Text(
                           finalPrice <= 0
                               ? 'تفعيل الاشتراك مجاناً (خصم 100%)'
-                              : 'الدفع الآن عبر EzonePay (${finalPrice.toStringAsFixed(finalPrice.truncateToDouble() == finalPrice ? 0 : 2)} د.ل)',
+                              : 'الدفع الآن (${finalPrice.toStringAsFixed(finalPrice.truncateToDouble() == finalPrice ? 0 : 2)} د.ل)',
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ],
@@ -528,7 +444,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   children: [
                     Icon(Icons.lock, size: 14, color: Color(0xFF94A3B8)),
                     SizedBox(width: 4),
-                    Text('دفع إلكتروني آمن ومحمي 100% عبر EzonePay', style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+                    Text('دفع إلكتروني آمن ومحمي 100%', style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
                   ],
                 ),
               ),

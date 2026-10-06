@@ -205,9 +205,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black87),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(24, 16, 24, MediaQuery.of(context).padding.bottom + 40),
+          child: Column(
           children: [
             _buildSettingsTile(
               context: context,
@@ -319,8 +320,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 40),
           ],
         ),
+      ),
       ),
     );
   }
