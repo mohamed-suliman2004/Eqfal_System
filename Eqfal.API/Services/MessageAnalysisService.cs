@@ -86,7 +86,7 @@ namespace Eqfal.API.Services
             // 3. Extract Currency
             string? explicitCurrency = ExtractExplicitCurrency(textWithoutUrls, userKeywords);
             bool hasExplicitCurrency = !string.IsNullOrEmpty(explicitCurrency);
-            string currency = explicitCurrency ?? "LYD";
+            string currency = explicitCurrency ?? "";
 
             // 4. Extract Amount with strict financial pattern matching
             bool foundWithCurrency = false;
