@@ -643,6 +643,11 @@ namespace Eqfal.API.Services
             return null;
         }
 
+        private static readonly HashSet<string> NamesStartingWithL = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "لطفي", "لطفيه", "لطفية", "ليلى", "ليلي", "لقمان", "لؤي", "لبنى", "لبني", "لمياء", "ليث", "لمى", "لمي", "لانا", "لورا"
+        };
+
         private static string? ExtractParty(string text, List<DynamicKeyword> keywords)
         {
             // Priority 1: Explicit Commercial / Business Entity (e.g. شركة الواثقون, شركة التوكل, شركة الريادة, مكتب الصرافة)
@@ -665,28 +670,33 @@ namespace Eqfal.API.Services
                 if (!string.IsNullOrWhiteSpace(party) && IsValidPartyName(party)) return party;
             }
 
-            // Priority 3: Prepositional / Verb phrases (e.g. أرجو تسليم فلان, استلم من فلان, تسليم لـ فلان)
-            var prepMatch = Regex.Match(text, @"(?:أرجو\s+تسليم|ارجو\s+تسليم|أرجو\s+استلام|ارجو\s+استلام|الرجاء\s+تسليم|الرجاء\s+استلام|ياريت\s+تسلم|ياريت\s+تسلملي|ياريت\s+تسليم|ياريت\s+استلام|ممكن\s+تسلم|ممكن\s+تسلملي|لو\s*سمحت\s+تسلم|لو\s*سمحت\s+سلم|تسليم\s+لـ|تسليم\s+إلى|تسليم\s+الى|تسليم|استلام\s+من|استلام|استلم\s+من|استلم|إيداع\s+في\s+حساب|إيداع\s+لـ|إيداع|ايداع|سحب\s+من|سحب|سلم\s+لـ|سلم|تسلم|من|إلى|الى|لـ|عن\s+طريق)\s+([^\d\r\n,.!?/\\:;#]+)", RegexOptions.IgnoreCase);
+            // Priority 3: Prepositional / Verb phrases (e.g. أرجو تسليم فلان, استلم من فلان, تسليم لـ فلان, تحويل لـ فلان)
+            var prepMatch = Regex.Match(text, @"(?:\b|^)(?:أرجو\s+تحويل|ارجو\s+تحويل|أرجو\s+تسليم|ارجو\s+تسليم|أرجو\s+استلام|ارجو\s+استلام|الرجاء\s+تسليم|الرجاء\s+استلام|ياريت\s+تسلم|ياريت\s+تسلملي|ياريت\s+تسليم|ياريت\s+استلام|ممكن\s+تسلم|ممكن\s+تسلملي|لو\s*سمحت\s+تسلم|لو\s*سمحت\s+سلم|تحويل\s+إلى|تحويل\s+الى|تحويل\s+لـ|تحويل\s+ل|تحويلي\s+لـ|تحويلي\s+ل|حولت\s+لـ|حولت\s+ل|تسليم\s+لـ|تسليم\s+إلى|تسليم\s+الى|تسليم|استلام\s+من|استلام|استلم\s+من|استلم|إيداع\s+في\s+حساب|إيداع\s+لـ|إيداع|ايداع|سحب\s+من|سحب|سلم\s+لـ|سلم|تسلم|من|إلى|الى|لـ|عن\s+طريق)\s+([^\d\r\n,.!?/\\:;#]+)", RegexOptions.IgnoreCase);
             if (prepMatch.Success)
             {
                 string party = CleanPartyName(prepMatch.Groups[1].Value, keywords);
                 if (!string.IsNullOrWhiteSpace(party) && IsValidPartyName(party)) return party;
             }
 
-            // Priority 4: Name at start before amount: "محمد 400 دينار"
-            var startNameMatch = Regex.Match(text, @"^([^\d\r\n,.!?_+=*/\\;:'""`~]{2,30})\s+(?:\d{1,3}(?:[,\s]\d{3})*(?:\.\d+)?|\d+)", RegexOptions.IgnoreCase);
-            if (startNameMatch.Success)
-            {
-                string party = CleanPartyName(startNameMatch.Groups[1].Value, keywords);
-                if (!string.IsNullOrWhiteSpace(party) && IsValidPartyName(party)) return party;
-            }
-
-            // Priority 5: Suffix patterns: "400 دينار علي"
-            var suffixMatch = Regex.Match(text, @"(?:\d+|دينار|دولار|يورو|ليرة|LYD|USD|EUR)\s+([\p{L}\s]{2,30})$", RegexOptions.IgnoreCase);
+            // Priority 4: Suffix patterns: "400 دينار علي" or "400 دينار لسليمان" or "250 د.ل لخالد"
+            var suffixMatch = Regex.Match(text, @"(?:\d+|دينار\s+ليبي|دينار|دولار|يورو|ليرة|ريال|درهم|جنيه|د\.ل|د\.ل\.|دل|LYD|USD|EUR|TRY|SAR|AED|EGP|[\$€£¥])\s+([\p{L}\s]{2,30})$", RegexOptions.IgnoreCase);
             if (suffixMatch.Success)
             {
                 string party = CleanPartyName(suffixMatch.Groups[1].Value, keywords);
                 if (!string.IsNullOrWhiteSpace(party) && IsValidPartyName(party)) return party;
+            }
+
+            // Priority 5: Name at start before amount: "محمد 400 دينار"
+            // ONLY if the message does NOT start with a transaction verb/status
+            bool startsWithAction = Regex.IsMatch(text, @"^\s*(?:تم|تمت|يتم|تحويل|تحويلي|تحويلتي|تحويله|تحويلة|تحويلات|حوالة|حواله|حولت|استلام|استلمت|تسليم|سلمت|دفع|دفعت|قبض|قبضت|صرف|صرفت|إيداع|ايداع|سحب|سحبت|وصل|وصلني|شحن|شحنت)(?:\s+|$)", RegexOptions.IgnoreCase);
+            if (!startsWithAction)
+            {
+                var startNameMatch = Regex.Match(text, @"^([^\d\r\n,.!?_+=*/\\;:'""`~]{2,30})\s+(?:\d{1,3}(?:[,\s]\d{3})*(?:\.\d+)?|\d+)", RegexOptions.IgnoreCase);
+                if (startNameMatch.Success)
+                {
+                    string party = CleanPartyName(startNameMatch.Groups[1].Value, keywords);
+                    if (!string.IsNullOrWhiteSpace(party) && IsValidPartyName(party)) return party;
+                }
             }
 
             return null;
@@ -696,7 +706,7 @@ namespace Eqfal.API.Services
         {
             if (string.IsNullOrWhiteSpace(raw)) return "";
             // Remove financial keywords and all verb conjugations so they are NEVER treated as customer names
-            string cleaned = Regex.Replace(raw, @"(?:\b|^)(الرجاء|تسليم|تسليمات|سلم|سلمت|سلملي|سلموا|سلمتلك|سلمتلي|سلمتله|تسلم|تسلملي|يسلم|نسلم|استلام|استلامات|استلم|استلمت|استلمتلك|استلمتلي|تستلم|يستلم|نستلم|تحويل|حولت|حولتلك|حولتلي|حولتله|حول|حولنا|حوالة|حواله|دينار|دولار|يورو|ليرة|ريال|درهم|جنيه|باوند|ين|يوان|روبل|فرنك|روبية|تيذر|صرف|صرفت|صرفتلك|قبض|قبضت|قبضتلك|دفع|دفعت|دفعتلك|إيداع|ايداع|أودعت|اودعت|سحب|سحبت|سحبتلك|دزيت|دزيتلك|دزيتلي|بعت|بعتلك|بعتلي|بعثت|بعثتلك|بعثتلي|وصل|وصلني|وصلت|وصلتلك|شحن|شحنت|شحنتلك|LYD|USD|EUR|TRY|SAR|AED|EGP|GBP|CNY|BYN|RUB|KWD|QAR|BHD|OMR|JOD|IQD|TND|MAD|DZD|SDG|LBP|SYP|YER|CHF|INR|USDT|JPY)(?:\b|$)", "", RegexOptions.IgnoreCase);
+            string cleaned = Regex.Replace(raw, @"(?:\b|^)(الرجاء|تسليم|تسليمات|سلم|سلمت|سلملي|سلموا|سلمتلك|سلمتلي|سلمتله|تسلم|تسلملي|يسلم|نسلم|استلام|استلامات|استلم|استلمت|استلمتلك|استلمتلي|تستلم|يستلم|نستلم|تحويل|تحويلي|تحويلتي|تحويله|تحويلة|تحويلات|حولت|حولتلك|حولتلي|حولتله|حولو|حولوا|حول|حولنا|حوالة|حواله|حوالات|دينار|دولار|يورو|ليرة|ريال|درهم|جنيه|باوند|ين|يوان|روبل|فرنك|روبية|تيذر|صرف|صرفت|صرفتلك|قبض|قبضت|قبضتلك|دفع|دفعت|دفعتلك|إيداع|ايداع|أودعت|اودعت|سحب|سحبت|سحبتلك|دزيت|دزيتلك|دزيتلي|بعت|بعتلك|بعتلي|بعثت|بعثتلك|بعثتلي|وصل|وصلني|وصلت|وصلتلك|شحن|شحنت|شحنتلك|LYD|USD|EUR|TRY|SAR|AED|EGP|GBP|CNY|BYN|RUB|KWD|QAR|BHD|OMR|JOD|IQD|TND|MAD|DZD|SDG|LBP|SYP|YER|CHF|INR|USDT|JPY)(?:\b|$)", "", RegexOptions.IgnoreCase);
             // Remove common Arabic stop words, address terms, and tracking terms
             cleaned = Regex.Replace(cleaned, @"(?:\b|^)(تم|تمت|تمه|يتم|عملية|مبلغ|قيمة|قيمه|رصيد|باقي|واصل|فلوس|مصاري|كاش|نقدي|نقد|شيك|حوالة|حواله|دفعة|دفعه|قسط|فاتورة|فاتوره|حساب|بنك|مصرف|فرع|رقم|بتاريخ|اليوم|أمس|امس|غدا|غدوة|الصبح|المسا|على|في|من|الى|إلى|عن|مع|بدون|بعد|قبل|كل|هذا|هذه|هذي|ذلك|هناك|هنا|لكن|أو|او|ان|أن|إن|لا|نعم|ايوا|لأ|كان|يكون|هو|هي|هم|أنا|انا|نحن|انت|أنت|فقط|بس|خلاص|اوكي|تمام|طيب|الله|يسلمك|شكرا|شكراً|مشكور|جزاك|ياريت|لوسمحت|ممكن|رجاءً|رجاء|أرجو|ارجو|عفوا|عفواً|بليز|please|plz|العنوان|عنوان|شارع|طريق|عمارة|شقة|طابق|اسطنبول|istanbul|fatih|تركيا|turkey|اشاري|إشاري|بوليصة|بوليصه|كود|code)(?:\b|$)", "", RegexOptions.IgnoreCase);
             cleaned = Regex.Replace(cleaned, @"[^\p{L}\s]", " ").Trim();
@@ -716,6 +726,25 @@ namespace Eqfal.API.Services
             var words = cleaned.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (words.Length > 4) cleaned = string.Join(" ", words.Take(4));
             cleaned = cleaned.Trim();
+
+            // Strip leading preposition لـ or ل (e.g. لسليمان -> سليمان, لمحمد -> محمد, للطفي -> لطفي)
+            if (cleaned.StartsWith("لل", StringComparison.Ordinal))
+            {
+                cleaned = cleaned.Substring(1).Trim();
+            }
+            else if (cleaned.StartsWith("لـ", StringComparison.Ordinal))
+            {
+                cleaned = Regex.Replace(cleaned, @"^لـ\s*", "").Trim();
+            }
+            else if (cleaned.StartsWith("ل", StringComparison.Ordinal) && cleaned.Length >= 4 && !cleaned.StartsWith("ال", StringComparison.Ordinal))
+            {
+                string candidate = cleaned.Substring(1).Trim();
+                if (!NamesStartingWithL.Contains(cleaned) && candidate.Length >= 3)
+                {
+                    cleaned = candidate;
+                }
+            }
+
             return cleaned;
         }
 
