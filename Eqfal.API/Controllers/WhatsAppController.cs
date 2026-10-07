@@ -490,8 +490,7 @@ namespace Eqfal.API.Controllers
                         "CONNECTION_UPDATE",
                         "MESSAGES_UPSERT",
                         "MESSAGES_UPDATE",
-                        "MESSAGES_DELETE",
-                        "SEND_MESSAGE"
+                        "MESSAGES_DELETE"
                     }
                 });
 
@@ -526,8 +525,7 @@ namespace Eqfal.API.Controllers
                             "CONNECTION_UPDATE",
                             "MESSAGES_UPSERT",
                             "MESSAGES_UPDATE",
-                            "MESSAGES_DELETE",
-                            "SEND_MESSAGE"
+                            "MESSAGES_DELETE"
                         }
                     }
                 });

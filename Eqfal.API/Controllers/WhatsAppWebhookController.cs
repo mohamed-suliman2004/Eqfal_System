@@ -67,6 +67,7 @@ namespace Eqfal.API.Controllers
         private static readonly System.Collections.Concurrent.ConcurrentQueue<string> _recentRawWebhooks = new();
         private static readonly ConcurrentDictionary<string, string> _messageSecretCache = new();
         private static readonly ConcurrentDictionary<int, (bool isActive, DateTime expiresAt)> _userSubscriptionCache = new();
+        private static readonly ConcurrentDictionary<string, DateTime> _recentlyProcessedMessageIds = new();
         private readonly AppDbContext _context;
         private readonly IHubContext<OperationsHub> _hubContext;
         private readonly IMessageAnalysisService _analysisService;
@@ -438,6 +439,48 @@ namespace Eqfal.API.Controllers
 
             int userId = payload.UserId.Value;
 
+            // Deduplication check: drop duplicate webhooks by MessageId
+            if (!string.IsNullOrEmpty(payload.MessageId))
+            {
+                var now = DateTime.UtcNow;
+                if (_recentlyProcessedMessageIds.Count > 300)
+                {
+                    foreach (var kvp in _recentlyProcessedMessageIds)
+                    {
+                        if ((now - kvp.Value).TotalMinutes > 5)
+                            _recentlyProcessedMessageIds.TryRemove(kvp.Key, out _);
+                    }
+                }
+
+                if (_recentlyProcessedMessageIds.ContainsKey(payload.MessageId))
+                {
+                    _logger.LogInformation("[Deduplication Dropped] MessageId {MessageId} was already processed recently.", payload.MessageId);
+                    return Ok(new { status = "DuplicateIgnored", messageId = payload.MessageId });
+                }
+
+                _recentlyProcessedMessageIds[payload.MessageId] = now;
+
+                bool existsInDb = await _context.Operations.AnyAsync(o => o.UserId == userId && o.RawMessage.StartsWith($"[MSG_ID:{payload.MessageId}]"));
+                if (existsInDb)
+                {
+                    _logger.LogInformation("[Deduplication Dropped] MessageId {MessageId} already exists in DB.", payload.MessageId);
+                    return Ok(new { status = "DuplicateIgnored", messageId = payload.MessageId });
+                }
+            }
+
+            // Deduplication check: drop identical text from same sender within 4 seconds
+            if (!string.IsNullOrWhiteSpace(rawText))
+            {
+                string textSig = $"{userId}_{rawFrom}_{rawText.Trim()}";
+                var now = DateTime.UtcNow;
+                if (_recentlyProcessedMessageIds.TryGetValue(textSig, out var lastSeen) && (now - lastSeen).TotalSeconds < 4)
+                {
+                    _logger.LogInformation("[Deduplication Dropped] Identical text signature received within 4s: {Sig}", textSig);
+                    return Ok(new { status = "DuplicateIgnored", signature = textSig });
+                }
+                _recentlyProcessedMessageIds[textSig] = now;
+            }
+
             // التحقق من صلاحية اشتراك المستخدم ونشاط الحساب
             bool isSubActive = await IsUserSubscriptionActiveAsync(userId);
             if (!isSubActive)
@@ -768,12 +811,9 @@ namespace Eqfal.API.Controllers
             _logger.LogInformation("[Operation Saved] ID: {Id}, Amount: {Amount}, Currency: {Currency}, Category: {Category}, Party: {Party}",
                 newOp.Id, newOp.Amount, newOp.Currency, newOp.Category, newOp.Party);
 
-            try { await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNewOperation", newOp); } catch { }
             try 
             { 
                 await _hubContext.Clients.Group($"user_{userId}").SendAsync("ReceiveNewOperation", newOp);
-                await _hubContext.Clients.User(userId.ToString()).SendAsync("ReceiveNewOperation", newOp);
-                await _hubContext.Clients.All.SendAsync("ReceiveNewOperation", newOp);
             } 
             catch { }
 
