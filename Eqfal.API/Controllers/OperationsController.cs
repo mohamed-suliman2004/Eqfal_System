@@ -83,7 +83,7 @@ namespace Eqfal.API.Controllers
                 }
                 foreach (var op in operations)
                 {
-                    if (!string.IsNullOrEmpty(op.ReceiverNumber) && !PhoneHelper.IsRealPhone(op.ReceiverNumber))
+                    if (!string.IsNullOrEmpty(op.ReceiverNumber))
                     {
                         string normRec = PhoneHelper.Normalize(op.ReceiverNumber);
                         if (mappings.TryGetValue(normRec, out var realRec) && PhoneHelper.IsRealPhone(realRec))
@@ -91,7 +91,7 @@ namespace Eqfal.API.Controllers
                             op.ReceiverNumber = realRec;
                         }
                     }
-                    if (!string.IsNullOrEmpty(op.SenderNumber) && !PhoneHelper.IsRealPhone(op.SenderNumber))
+                    if (!string.IsNullOrEmpty(op.SenderNumber))
                     {
                         string normSnd = PhoneHelper.Normalize(op.SenderNumber);
                         if (mappings.TryGetValue(normSnd, out var realSnd) && PhoneHelper.IsRealPhone(realSnd))
@@ -127,7 +127,7 @@ namespace Eqfal.API.Controllers
                     return NotFound(new { message = "العملية غير موجودة" });
                 }
 
-                if (!string.IsNullOrEmpty(operation.ReceiverNumber) && !PhoneHelper.IsRealPhone(operation.ReceiverNumber))
+                if (!string.IsNullOrEmpty(operation.ReceiverNumber))
                 {
                     string normRec = PhoneHelper.Normalize(operation.ReceiverNumber);
                     var map = await _context.LidMappings.AsNoTracking().FirstOrDefaultAsync(l => l.Lid == normRec);
@@ -137,7 +137,7 @@ namespace Eqfal.API.Controllers
                     }
                 }
 
-                if (!string.IsNullOrEmpty(operation.SenderNumber) && !PhoneHelper.IsRealPhone(operation.SenderNumber))
+                if (!string.IsNullOrEmpty(operation.SenderNumber))
                 {
                     string normSnd = PhoneHelper.Normalize(operation.SenderNumber);
                     var map = await _context.LidMappings.AsNoTracking().FirstOrDefaultAsync(l => l.Lid == normSnd);

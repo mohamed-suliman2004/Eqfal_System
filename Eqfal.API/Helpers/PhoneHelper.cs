@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -55,7 +55,11 @@ namespace Eqfal.API.Helpers
         public static bool IsRealPhone(string? phone)
         {
             if (string.IsNullOrWhiteSpace(phone)) return false;
-            string digits = Regex.Replace(phone, @"[^\d]", "");
+            string clean = phone.Trim();
+            if (clean.EndsWith("@g.us", StringComparison.OrdinalIgnoreCase)) return false;
+            if (clean.EndsWith("@lid", StringComparison.OrdinalIgnoreCase)) return false;
+
+            string digits = Regex.Replace(clean, @"[^\d]", "");
             if (digits.Length >= 15) return false; // 15+ digits is a WhatsApp LID
             return digits.Length >= 8 && digits.Length <= 14;
         }
@@ -63,7 +67,12 @@ namespace Eqfal.API.Helpers
         public static bool IsLid(string? value)
         {
             if (string.IsNullOrWhiteSpace(value)) return false;
-            string digits = Regex.Replace(value, @"[^\d]", "");
+            string clean = value.Trim();
+            if (clean.EndsWith("@g.us", StringComparison.OrdinalIgnoreCase)) return false;
+            if (clean.EndsWith("@s.whatsapp.net", StringComparison.OrdinalIgnoreCase)) return false;
+            if (clean.EndsWith("@lid", StringComparison.OrdinalIgnoreCase)) return true;
+
+            string digits = Regex.Replace(clean, @"[^\d]", "");
             return digits.Length >= 15;
         }
 

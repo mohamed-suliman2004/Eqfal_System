@@ -68,6 +68,7 @@ namespace Eqfal.API.Controllers
         private static readonly ConcurrentDictionary<string, string> _messageSecretCache = new();
         private static readonly ConcurrentDictionary<int, (bool isActive, DateTime expiresAt)> _userSubscriptionCache = new();
         private static readonly ConcurrentDictionary<string, DateTime> _recentlyProcessedMessageIds = new();
+        private static readonly ConcurrentDictionary<string, (string RealPhone, string? ContactName)> _lidMappingCache = new();
         private readonly AppDbContext _context;
         private readonly IHubContext<OperationsHub> _hubContext;
         private readonly IMessageAnalysisService _analysisService;
@@ -88,6 +89,97 @@ namespace Eqfal.API.Controllers
             _configuration = configuration;
         }
 
+        private async Task<(string? lid, string? realPhone)> TryLearnLidMappingAsync(string? jid1, string? jid2, string? pushName)
+        {
+            if (string.IsNullOrWhiteSpace(jid1) || string.IsNullOrWhiteSpace(jid2)) return (null, null);
+
+            string s1 = jid1.Trim();
+            string s2 = jid2.Trim();
+
+            string? lidStr = null;
+            string? phoneStr = null;
+
+            // Direct suffix matching: one is @lid and other is @s.whatsapp.net
+            if (s1.EndsWith("@lid", StringComparison.OrdinalIgnoreCase) && s2.EndsWith("@s.whatsapp.net", StringComparison.OrdinalIgnoreCase))
+            {
+                lidStr = s1;
+                phoneStr = s2;
+            }
+            else if (s2.EndsWith("@lid", StringComparison.OrdinalIgnoreCase) && s1.EndsWith("@s.whatsapp.net", StringComparison.OrdinalIgnoreCase))
+            {
+                lidStr = s2;
+                phoneStr = s1;
+            }
+            // Strict regex/normalization matching
+            else if (PhoneHelper.IsLid(s1) && PhoneHelper.IsRealPhone(PhoneHelper.Normalize(s2)))
+            {
+                lidStr = s1;
+                phoneStr = s2;
+            }
+            else if (PhoneHelper.IsLid(s2) && PhoneHelper.IsRealPhone(PhoneHelper.Normalize(s1)))
+            {
+                lidStr = s2;
+                phoneStr = s1;
+            }
+
+            if (string.IsNullOrEmpty(lidStr) || string.IsNullOrEmpty(phoneStr)) return (null, null);
+
+            string normLid = PhoneHelper.Normalize(lidStr);
+            string normPhone = PhoneHelper.Normalize(phoneStr);
+
+            if (string.IsNullOrEmpty(normLid) || string.IsNullOrEmpty(normPhone) || normLid == normPhone) return (null, null);
+            if (!PhoneHelper.IsRealPhone(normPhone)) return (null, null);
+
+            try
+            {
+                string? cleanName = !string.IsNullOrWhiteSpace(pushName) ? pushName.Trim() : null;
+
+                // Upsert in database
+                var existing = await _context.LidMappings.FirstOrDefaultAsync(l => l.Lid == normLid);
+                if (existing == null)
+                {
+                    _context.LidMappings.Add(new LidMapping
+                    {
+                        Lid = normLid,
+                        RealPhone = normPhone,
+                        ContactName = cleanName,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                    await _context.SaveChangesAsync();
+                    _logger.LogInformation("[LID Learned - NEW] Lid={Lid} -> Phone={Phone}, PushName={PushName}", normLid, normPhone, cleanName);
+                }
+                else
+                {
+                    bool modified = false;
+                    if (existing.RealPhone != normPhone)
+                    {
+                        existing.RealPhone = normPhone;
+                        modified = true;
+                    }
+                    if (!string.IsNullOrWhiteSpace(cleanName) && existing.ContactName != cleanName)
+                    {
+                        existing.ContactName = cleanName;
+                        modified = true;
+                    }
+                    if (modified)
+                    {
+                        await _context.SaveChangesAsync();
+                        _logger.LogInformation("[LID Learned - UPDATED] Lid={Lid} -> Phone={Phone}, PushName={PushName}", normLid, normPhone, cleanName);
+                    }
+                }
+
+                // Update memory cache ONLY after DB persistence succeeds
+                _lidMappingCache[normLid] = (normPhone, cleanName);
+
+                return (normLid, normPhone);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("[LID Upsert Handled Concurrency] Lid={Lid}: {Msg}", normLid, ex.Message);
+                return (normLid, normPhone);
+            }
+        }
+
         private async Task<(string realPhone, string contactName)> ResolveContactInfoAsync(
             string? jid, string? senderPn, string? senderLid, string? rawSender, string? fallbackName, string? instanceName = null, int userId = 1, bool isFromMe = false)
         {
@@ -101,31 +193,37 @@ namespace Eqfal.API.Controllers
             }
 
             // 2. jid is a standard phone (@s.whatsapp.net)
-            if (!string.IsNullOrEmpty(jid) && !jid.Contains("@lid"))
+            if (!string.IsNullOrEmpty(jid) && !jid.EndsWith("@lid", StringComparison.OrdinalIgnoreCase) && !jid.EndsWith("@g.us", StringComparison.OrdinalIgnoreCase))
             {
                 string digits = PhoneHelper.Normalize(jid);
                 if (PhoneHelper.IsRealPhone(digits)) return (digits, name);
             }
 
             // 3. rawSender might be a real phone
-            if (!string.IsNullOrWhiteSpace(rawSender))
+            if (!string.IsNullOrWhiteSpace(rawSender) && !rawSender.EndsWith("@lid", StringComparison.OrdinalIgnoreCase))
             {
                 string sDigits = PhoneHelper.Normalize(rawSender);
                 if (PhoneHelper.IsRealPhone(sDigits)) return (sDigits, name);
             }
 
-            // 4. Evolution API single number check
-            string evolutionUrl = _configuration["WhatsAppService:NodeUrl"] ?? "http://localhost:8080";
-            string evolutionApiKey = _configuration["WhatsAppService:ApiKey"] ?? "";
-            string instanceToUse = !string.IsNullOrWhiteSpace(instanceName) ? instanceName : $"user_{userId}";
-
+            // 4. Check In-Memory Cache and LidMappings table for any LID candidate
             var bestLidCandidate = new[] { senderLid, jid, rawSender }
                 .FirstOrDefault(s => !string.IsNullOrWhiteSpace(s) && PhoneHelper.IsLid(s));
 
             if (bestLidCandidate != null)
             {
-                string resolved = await PhoneHelper.ResolveLidViaEvolutionApiAsync(bestLidCandidate, evolutionUrl, instanceToUse, evolutionApiKey);
-                if (PhoneHelper.IsRealPhone(resolved)) return (resolved, name);
+                string normCandidateLid = PhoneHelper.Normalize(bestLidCandidate);
+                if (_lidMappingCache.TryGetValue(normCandidateLid, out var cached) && PhoneHelper.IsRealPhone(cached.RealPhone))
+                {
+                    return (cached.RealPhone, !string.IsNullOrWhiteSpace(cached.ContactName) ? cached.ContactName : name);
+                }
+
+                var mapping = await _context.LidMappings.AsNoTracking().FirstOrDefaultAsync(l => l.Lid == normCandidateLid);
+                if (mapping != null && PhoneHelper.IsRealPhone(mapping.RealPhone))
+                {
+                    _lidMappingCache[normCandidateLid] = (mapping.RealPhone, mapping.ContactName);
+                    return (mapping.RealPhone, !string.IsNullOrWhiteSpace(mapping.ContactName) ? mapping.ContactName : name);
+                }
             }
 
             // 5. Check existing MonitoredNumbers for this LID
@@ -333,30 +431,58 @@ namespace Eqfal.API.Controllers
                     if (string.IsNullOrEmpty(participantAlt) && actualMsg.TryGetProperty("participantAlt", out var mpa))
                         participantAlt = mpa.GetString() ?? "";
 
-                    if (string.IsNullOrEmpty(senderPn) && !string.IsNullOrEmpty(remoteJidAlt) && PhoneHelper.IsRealPhone(PhoneHelper.Normalize(remoteJidAlt)))
-                        senderPn = remoteJidAlt;
-                    if (string.IsNullOrEmpty(senderPn) && !string.IsNullOrEmpty(participantAlt) && PhoneHelper.IsRealPhone(PhoneHelper.Normalize(participantAlt)))
-                        senderPn = participantAlt;
+                    bool isGroup = remoteJid.EndsWith("@g.us", StringComparison.OrdinalIgnoreCase);
+
+                    // Bi-directional LID learning
+                    if (!string.IsNullOrEmpty(remoteJidAlt))
+                    {
+                        await TryLearnLidMappingAsync(remoteJid, remoteJidAlt, pushName);
+                    }
+                    if (!string.IsNullOrEmpty(participantAlt))
+                    {
+                        await TryLearnLidMappingAsync(participant, participantAlt, pushName);
+                    }
+                    if (!string.IsNullOrEmpty(senderLid) && !string.IsNullOrEmpty(senderPn))
+                    {
+                        await TryLearnLidMappingAsync(senderLid, senderPn, pushName);
+                    }
+
+                    if (string.IsNullOrEmpty(senderPn))
+                    {
+                        if (isGroup)
+                        {
+                            if (participantAlt.EndsWith("@s.whatsapp.net", StringComparison.OrdinalIgnoreCase) && PhoneHelper.IsRealPhone(PhoneHelper.Normalize(participantAlt)))
+                                senderPn = participantAlt;
+                            else if (participant.EndsWith("@s.whatsapp.net", StringComparison.OrdinalIgnoreCase) && PhoneHelper.IsRealPhone(PhoneHelper.Normalize(participant)))
+                                senderPn = participant;
+                        }
+                        else
+                        {
+                            if (remoteJidAlt.EndsWith("@s.whatsapp.net", StringComparison.OrdinalIgnoreCase) && PhoneHelper.IsRealPhone(PhoneHelper.Normalize(remoteJidAlt)))
+                                senderPn = remoteJidAlt;
+                            else if (remoteJid.EndsWith("@s.whatsapp.net", StringComparison.OrdinalIgnoreCase) && PhoneHelper.IsRealPhone(PhoneHelper.Normalize(remoteJid)))
+                                senderPn = remoteJid;
+                        }
+                    }
 
                     if (string.IsNullOrEmpty(senderPn) && actualMsg.TryGetProperty("senderPn", out var spn2))
                         senderPn = spn2.GetString() ?? "";
                     if (string.IsNullOrEmpty(senderPn) && actualMsg.TryGetProperty("sender", out var sProp))
                     {
                         var sStr = sProp.GetString() ?? "";
-                        if (sStr.EndsWith("@s.whatsapp.net")) senderPn = sStr;
+                        if (sStr.EndsWith("@s.whatsapp.net", StringComparison.OrdinalIgnoreCase)) senderPn = sStr;
                     }
                     if (string.IsNullOrEmpty(senderPn) && actualMsg.TryGetProperty("participant", out var pProp))
                     {
                         var pStr = pProp.GetString() ?? "";
-                        if (pStr.EndsWith("@s.whatsapp.net")) senderPn = pStr;
+                        if (pStr.EndsWith("@s.whatsapp.net", StringComparison.OrdinalIgnoreCase)) senderPn = pStr;
                     }
                     if (string.IsNullOrEmpty(senderPn) && keyElem.ValueKind == JsonValueKind.Object && keyElem.TryGetProperty("participant", out var kpProp))
                     {
                         var kpStr = kpProp.GetString() ?? "";
-                        if (kpStr.EndsWith("@s.whatsapp.net")) senderPn = kpStr;
+                        if (kpStr.EndsWith("@s.whatsapp.net", StringComparison.OrdinalIgnoreCase)) senderPn = kpStr;
                     }
 
-                    bool isGroup = remoteJid.EndsWith("@g.us");
                     string groupSender = !string.IsNullOrEmpty(participant) ? participant : (fromMe ? "" : remoteJid);
                     string effectiveSender = !string.IsNullOrEmpty(senderPn) ? senderPn : groupSender;
 
@@ -550,33 +676,13 @@ namespace Eqfal.API.Controllers
             _logger.LogInformation("[Phone Resolution] resolvedPhone={ResolvedPhone}, chatJid={ChatJid}, senderNumber={SenderNumber}, rawChatJid={RawChatJid}",
                 resolvedPhone, chatJid, senderNumber, rawChatJid);
 
-            // Auto-learn LID to Real Phone mapping on the fly if present
+            // Bi-directional LID learning from all incoming payload identifiers
+            await TryLearnLidMappingAsync(payload.ChatJid, payload.RemoteJidAlt, payload.PushName);
+            await TryLearnLidMappingAsync(payload.Sender, payload.ParticipantAlt, payload.PushName);
+            await TryLearnLidMappingAsync(payload.SenderLid, payload.SenderPn, payload.PushName);
             if (!payload.IsGroup)
             {
-                string? candidateLid = new[] { payload.SenderLid, rawSender, rawFrom }.FirstOrDefault(s => !string.IsNullOrWhiteSpace(s) && PhoneHelper.IsLid(s));
-                string? candidatePhone = new[] { resolvedPhone, payload.SenderPn, senderNumber }.FirstOrDefault(s => !string.IsNullOrWhiteSpace(s) && PhoneHelper.IsRealPhone(s));
-
-                if (!string.IsNullOrEmpty(candidateLid) && !string.IsNullOrEmpty(candidatePhone))
-                {
-                    string normLid = PhoneHelper.Normalize(candidateLid);
-                    string normPhone = PhoneHelper.Normalize(candidatePhone);
-
-                    if (!string.IsNullOrEmpty(normLid) && !string.IsNullOrEmpty(normPhone) && normLid != normPhone)
-                    {
-                        var existingLid = await _context.LidMappings.FirstOrDefaultAsync(l => l.Lid == normLid);
-                        if (existingLid == null)
-                        {
-                            _context.LidMappings.Add(new LidMapping
-                            {
-                                Lid = normLid,
-                                RealPhone = normPhone,
-                                ContactName = payload.PushName,
-                                CreatedAt = DateTime.UtcNow
-                            });
-                            try { await _context.SaveChangesAsync(); } catch { }
-                        }
-                    }
-                }
+                await TryLearnLidMappingAsync(rawFrom, resolvedPhone, payload.PushName);
             }
 
             string normText = text
@@ -622,14 +728,57 @@ namespace Eqfal.API.Controllers
                         phoneToSave = chatJid;
                     else
                     {
-                        phoneToSave = !string.IsNullOrEmpty(chatJid) ? chatJid : rawChatJid;
-                        _logger.LogInformation("[Command #اقفال] Saved identifier: {Phone}", phoneToSave);
+                        // Check if LID is already mapped in cache or DB
+                        string candidate = !string.IsNullOrEmpty(chatJid) ? chatJid : rawChatJid;
+                        string normCandidate = PhoneHelper.Normalize(candidate);
+                        if (_lidMappingCache.TryGetValue(normCandidate, out var cached) && PhoneHelper.IsRealPhone(cached.RealPhone))
+                        {
+                            phoneToSave = cached.RealPhone;
+                        }
+                        else
+                        {
+                            var mapped = await _context.LidMappings.AsNoTracking().FirstOrDefaultAsync(l => l.Lid == normCandidate);
+                            if (mapped != null && PhoneHelper.IsRealPhone(mapped.RealPhone))
+                            {
+                                phoneToSave = mapped.RealPhone;
+                                _lidMappingCache[normCandidate] = (mapped.RealPhone, mapped.ContactName);
+                            }
+                            else
+                            {
+                                phoneToSave = candidate;
+                            }
+                        }
+                        _logger.LogInformation("[Command #اقفال] Final identifier: {Phone}", phoneToSave);
                     }
                 }
 
-                string defaultName = isGroup 
-                    ? (!string.IsNullOrWhiteSpace(resolvedName) ? resolvedName : (!string.IsNullOrWhiteSpace(payload.GroupName) ? payload.GroupName : "ظ…ط¬ظ…ظˆط¹ط©")) 
-                    : (!string.IsNullOrWhiteSpace(resolvedName) ? resolvedName : (!isFromMe && !string.IsNullOrWhiteSpace(payload.PushName) ? payload.PushName : phoneToSave));
+                bool isLidSave = !isGroup && PhoneHelper.IsLid(phoneToSave);
+                string defaultName;
+                if (isGroup)
+                {
+                    defaultName = !string.IsNullOrWhiteSpace(resolvedName) ? resolvedName 
+                        : (!string.IsNullOrWhiteSpace(payload.GroupName) ? payload.GroupName : "مجموعة");
+                }
+                else
+                {
+                    if (!string.IsNullOrWhiteSpace(resolvedName))
+                    {
+                        defaultName = resolvedName;
+                    }
+                    else if (isLidSave && !string.IsNullOrWhiteSpace(payload.PushName))
+                    {
+                        // Explicitly indicate that this is a temporary WhatsApp pushName
+                        defaultName = $"{payload.PushName.Trim()} (اسم واتساب مؤقت)";
+                    }
+                    else if (!isFromMe && !string.IsNullOrWhiteSpace(payload.PushName))
+                    {
+                        defaultName = payload.PushName.Trim();
+                    }
+                    else
+                    {
+                        defaultName = isLidSave ? "جهة اتصال مؤقتة" : phoneToSave;
+                    }
+                }
 
                 _logger.LogInformation("[Command] isActivating={IsActivating}, phoneToSave={Phone}, name={Name}, isGroup={IsGroup}",
                     isActivating, phoneToSave, defaultName, isGroup);
@@ -786,6 +935,42 @@ namespace Eqfal.API.Controllers
                 : (analysisResult.IsConflicted || analysisResult.Status == "مسودة" ? "" : (isFromMe ? "تسليم" : "استلام"));
 
             string party = !string.IsNullOrWhiteSpace(analysisResult.Party) ? analysisResult.Party : "";
+
+            if (!string.IsNullOrEmpty(finalSender))
+            {
+                string normSnd = PhoneHelper.Normalize(finalSender);
+                if (_lidMappingCache.TryGetValue(normSnd, out var cachedSnd) && PhoneHelper.IsRealPhone(cachedSnd.RealPhone))
+                {
+                    finalSender = cachedSnd.RealPhone;
+                }
+                else
+                {
+                    var mapSnd = await _context.LidMappings.AsNoTracking().FirstOrDefaultAsync(l => l.Lid == normSnd);
+                    if (mapSnd != null && PhoneHelper.IsRealPhone(mapSnd.RealPhone))
+                    {
+                        finalSender = mapSnd.RealPhone;
+                        _lidMappingCache[normSnd] = (mapSnd.RealPhone, mapSnd.ContactName);
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(finalReceiver))
+            {
+                string normRec = PhoneHelper.Normalize(finalReceiver);
+                if (_lidMappingCache.TryGetValue(normRec, out var cachedRec) && PhoneHelper.IsRealPhone(cachedRec.RealPhone))
+                {
+                    finalReceiver = cachedRec.RealPhone;
+                }
+                else
+                {
+                    var mapRec = await _context.LidMappings.AsNoTracking().FirstOrDefaultAsync(l => l.Lid == normRec);
+                    if (mapRec != null && PhoneHelper.IsRealPhone(mapRec.RealPhone))
+                    {
+                        finalReceiver = mapRec.RealPhone;
+                        _lidMappingCache[normRec] = (mapRec.RealPhone, mapRec.ContactName);
+                    }
+                }
+            }
 
             var newOp = new Operation
             {
