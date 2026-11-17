@@ -181,6 +181,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 // Enable CORS
 app.UseCors("AllowAll");

@@ -632,7 +632,9 @@ namespace Eqfal.API.Controllers
 
         [Authorize]
         [HttpPost("delete-account")]
+        [HttpDelete("delete-account")]
         [HttpDelete("account")]
+        [HttpPost("account")]
         public async Task<IActionResult> DeleteAccount()
         {
             try

@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../config.dart';
@@ -18,13 +20,15 @@ class AppUpdateDialog extends StatelessWidget {
         ? versionInfo.storeUrl
         : Config.playStoreUrl;
 
-    try {
-      final Uri marketUri = Uri.parse(Config.playStoreMarketUrl);
-      if (await canLaunchUrl(marketUri)) {
-        await launchUrl(marketUri, mode: LaunchMode.externalApplication);
-        return;
-      }
-    } catch (_) {}
+    if (!kIsWeb && Platform.isAndroid) {
+      try {
+        final Uri marketUri = Uri.parse(Config.playStoreMarketUrl);
+        if (await canLaunchUrl(marketUri)) {
+          await launchUrl(marketUri, mode: LaunchMode.externalApplication);
+          return;
+        }
+      } catch (_) {}
+    }
 
     try {
       final Uri webUri = Uri.parse(storeUrl);

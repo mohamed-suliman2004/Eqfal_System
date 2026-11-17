@@ -474,7 +474,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> deleteAccount() async {
     try {
-      final response = await _dio.delete('/Auth/delete-account');
+      final response = await _dio.post('/Auth/delete-account');
       if (response.statusCode == 200 || response.statusCode == 204) {
         return {'success': true};
       }

@@ -33,7 +33,10 @@ namespace Eqfal.API.Controllers
             var isForceUpdate = bool.TryParse(section["IsForceUpdate"], out var fu) && fu;
             var title = section["Title"] ?? "تحديث جديد متوفر";
             var releaseNotes = section["ReleaseNotes"] ?? "• تحسين سرعة واستقرار التطبيق.\n• دقة عالية في تحليل رسائل العمليات.\n• إصلاحات عامة في شاشة المسودات والتقارير.";
-            var storeUrl = section["StoreUrl"] ?? "https://play.google.com/store/apps/details?id=ly.mostanad.eqfal_app";
+            bool isIos = !string.IsNullOrEmpty(platform) && platform.Trim().Equals("ios", StringComparison.OrdinalIgnoreCase);
+            var storeUrl = isIos
+                ? (section["StoreUrlIos"] ?? "https://apps.apple.com/app/id6740000000")
+                : (section["StoreUrlAndroid"] ?? section["StoreUrl"] ?? "https://play.google.com/store/apps/details?id=ly.mostanad.eqfal_app");
 
             bool updateAvailable = buildNumber.HasValue && buildNumber.Value < latestBuildNumber;
             bool forceUpdate = isForceUpdate || (buildNumber.HasValue && buildNumber.Value < minRequiredBuildNumber);

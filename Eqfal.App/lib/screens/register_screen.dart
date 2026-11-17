@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/operations_provider.dart';
 import '../services/signalr_service.dart';
 import '../models/country_code.dart';
@@ -34,6 +35,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _emailController.addListener(_clearError);
     _passwordController.addListener(_clearError);
     _confirmPasswordController.addListener(_clearError);
+  }
+
+  Future<void> _openUrl(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {}
   }
 
   void _clearError() {
@@ -289,6 +299,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   )
                                 : const Text('تسجيل حساب جديد', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                           ),
+                        ),
+                        const SizedBox(height: 16),
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            const Text('بالمتابعة فإنك توافق على ', style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+                            InkWell(
+                              onTap: () => _openUrl('https://eqfall.mostanad.ly/terms'),
+                              child: const Text('شروط الاستخدام', style: TextStyle(color: Color(0xFF2563EB), fontSize: 12, fontWeight: FontWeight.bold, decoration: TextDecoration.underline)),
+                            ),
+                            const Text(' و ', style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+                            InkWell(
+                              onTap: () => _openUrl('https://eqfall.mostanad.ly/privacy'),
+                              child: const Text('سياسة الخصوصية', style: TextStyle(color: Color(0xFF2563EB), fontSize: 12, fontWeight: FontWeight.bold, decoration: TextDecoration.underline)),
+                            ),
+                          ],
                         ),
                       ],
                     ),

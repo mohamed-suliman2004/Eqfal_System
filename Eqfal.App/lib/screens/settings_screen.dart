@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/operations_provider.dart';
 import 'link_whatsapp_dialog.dart';
 import 'account_details_dialog.dart';
@@ -291,6 +292,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 );
               },
             ),
+            const SizedBox(height: 12),
+            _buildSettingsTile(
+              context: context,
+              title: 'سياسة الخصوصية',
+              subtitle: 'اطلع على سياسة حماية وأمان بياناتك وخصوصيتك.',
+              icon: Icons.privacy_tip_outlined,
+              onTap: () => _openUrl('https://eqfall.mostanad.ly/privacy'),
+            ),
+            const SizedBox(height: 12),
+            _buildSettingsTile(
+              context: context,
+              title: 'شروط وأحكام الاستخدام',
+              subtitle: 'اتفاقية الاستخدام والشروط العامة للنظام.',
+              icon: Icons.description_outlined,
+              onTap: () => _openUrl('https://eqfall.mostanad.ly/terms'),
+            ),
+            const SizedBox(height: 12),
+            _buildSettingsTile(
+              context: context,
+              title: 'حذف الحساب نهائياً',
+              subtitle: 'حذف حسابك وجميع سجلاتك المالية نهائياً من النظام.',
+              icon: Icons.delete_forever_rounded,
+              iconColor: Colors.red.shade600,
+              iconBgColor: Colors.red.shade50,
+              titleColor: Colors.red.shade700,
+              borderColor: Colors.red.shade100,
+              onTap: _confirmDeleteAccount,
+            ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
@@ -373,12 +402,81 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
+  Future<void> _openUrl(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {}
+  }
+
+  void _confirmDeleteAccount() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: const [
+            Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+            SizedBox(width: 8),
+            Text('حذف الحساب نهائياً', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          ],
+        ),
+        content: const Text(
+          'هل أنت متأكد من رغبتك في حذف حسابك نهائياً؟\n\nسيتم مسح جميع بياناتك، والعمليات المالية، والأرقام المراقبة بشكل فوري ولا يمكن استرجاعها.',
+          style: TextStyle(fontSize: 14, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('إلغاء'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final res = await ref.read(apiServiceProvider).deleteAccount();
+              if (res['success'] == true) {
+                ref.read(signalRServiceProvider).stopConnection();
+                await ref.read(apiServiceProvider).logout();
+                ref.invalidate(operationsProvider);
+                ref.invalidate(monitoredNumbersProvider);
+                if (mounted) {
+                  context.go('/login');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('تم حذف حسابك بنجاح'), backgroundColor: Colors.red),
+                  );
+                }
+              } else {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(res['message'] ?? 'فشل حذف الحساب'), backgroundColor: Colors.red),
+                  );
+                }
+              }
+            },
+            child: const Text('نعم، احذف الحساب', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSettingsTile({
     required BuildContext context,
     required String title,
     required String subtitle,
     required IconData icon,
     required VoidCallback onTap,
+    Color? iconColor,
+    Color? iconBgColor,
+    Color? titleColor,
+    Color? borderColor,
   }) {
     return InkWell(
       onTap: onTap,
@@ -388,7 +486,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade100, width: 2),
+          border: Border.all(color: borderColor ?? Colors.grey.shade100, width: 2),
           boxShadow: [
             BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4)),
           ],
@@ -397,15 +495,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: Colors.blue.shade50, shape: BoxShape.circle),
-              child: Icon(icon, color: Colors.blue.shade700, size: 20),
+              decoration: BoxDecoration(color: iconBgColor ?? Colors.blue.shade50, shape: BoxShape.circle),
+              child: Icon(icon, color: iconColor ?? Colors.blue.shade700, size: 20),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B))),
+                  Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: titleColor ?? const Color(0xFF1E293B))),
                   const SizedBox(height: 4),
                   Text(subtitle, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
                 ],
